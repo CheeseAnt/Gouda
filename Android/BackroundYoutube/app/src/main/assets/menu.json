@@ -1,0 +1,167 @@
+{"starter": [
+		{ 
+			"name":"Cherry Ribs",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "Sample Ribs 1",
+			"calories": 33,
+			"price": 10.8,
+			"parents":["ribs", "southern"]
+		},
+		{ 
+			"name":"Southern Style",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "Sample Ribs 2",
+			"calories": 33154,
+			"price": 45.1,
+			"parents":["ribs", "mexican"]
+		},
+		{ 
+			"name":"Mexican Ribs",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "Hot hot hot",
+			"calories": 3,
+			"price": 45.00,
+			"parents":["ribs", "italian"]
+		},
+
+		{ 
+			"name":"Roll 1",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "details - a narrative on the item",
+			"calories": 3,
+			"price": 45,
+			"parents":["ribs", "southern"]
+		},
+		{ 
+			"name":"Roll 2",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "details - a narrative on the item",
+			"calories": 3,
+			"price": 45,
+			"parents":["ribs", "southern"]
+		},
+		{ 
+			"name":"Roll 3",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "details - a narrative on the item",
+			"calories": 3,
+			"price": 45,
+			"parents":["rolls", "southern"]
+		},
+		{ 
+			"name":"Wings 1",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "details - a narrative on the item",
+			"calories": 3,
+			"price": 45,
+			"parents":["rolls", "southern"]
+		},
+		{ 
+			"name":"Wings 2",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "details - a narrative on the item",
+			"calories": 3,
+			"price": 45,
+			"parents":["rolls", "southern"]
+		},
+		{ 
+			"name":"The Best Wings",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "details - a narrative on the item",
+			"calories": 3,
+			"price": 45,
+			"parents":["rolls", "southern"]
+		}
+],
+"mains": [
+		{ 
+			"name":"name of item",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "details - a narrative on the item",
+			"calories": 3,
+			"price": 45,
+			"parents":["mains", "lotto"]
+		},
+		{ 
+			"name":"name of item",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "details - a narrative on the item",
+			"calories": 3,
+			"price": 45,
+			"parents":["mains", "lotto"]
+		},
+		{ 
+			"name":"name of item",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "details - a narrative on the item",
+			"calories": 3,
+			"price": 45,
+			"parents":["mains", "lotto"]
+		},
+		{ 
+			"name":"name of item",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "details - a narrative on the item",
+			"calories": 3,
+			"price": 45,
+			"parents":["mains", "lotto", "turkey"]
+		},
+		{ 
+			"name":"name of item",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "details - a narrative on the item",
+			"calories": 3,
+			"price": 45,
+			"parents":["mains", "lotto", "turkey"]
+		},
+		{ 
+			"name":"name of item",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "details - a narrative on the item",
+			"calories": 3,
+			"price": 45,
+			"parents":["mains", "lotto", "turkey"]
+		},
+		{ 
+			"name":"name of item",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "details - a narrative on the item",
+			"calories": 3,
+			"price": 45,
+			"parents":["mains", "lotto", "turkey"]
+		},
+		{ 
+			"name":"name of item",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "details - a narrative on the item",
+			"calories": 3,
+			"price": 45,
+			"parents":["mains"]
+		},
+		{ 
+			"name":"name of item",
+			"id": 1,
+			"image":"images/name.png",
+			"information": "details - a narrative on the item",
+			"calories": 3,
+			"price": 45,
+			"parents":["mains"]
+		}
+	]}
