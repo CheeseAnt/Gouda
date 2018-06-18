@@ -1,0 +1,4 @@
+## Requirements
+tkinter
+matplotlib
+numpy
