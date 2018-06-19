@@ -80,9 +80,7 @@ class DataStream:
 
 		return results
 
-	def getAllData(self):
-		self.getNewData()
-
+	def getAllDataNoUpdate(self):
 		# return data in dictionary
 		results = dict()
 
@@ -91,4 +89,10 @@ class DataStream:
 		results.update({'voltage' : self.voltage_history})
 		results.update({'power' : self.power_history})
 		
-		return results		
+		return results
+
+	def getAllData(self):
+		""" update data then return all """
+		self.getNewData()
+
+		return self.getAllDataNoUpdate()
