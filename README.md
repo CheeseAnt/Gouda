@@ -5,6 +5,7 @@ Mainly things that interest me but might be of use to someone else. If I think t
 
 
 ## Snek
+Python/snake.py
 
 An overnight project that I took on with my roommate in an effort to learn python. We did okay. I like it, anyway.
 
@@ -19,6 +20,7 @@ NOTE: '2' does not mean the number 2. It means 'to'. Use wasd/arrow keys to play
 Also, haha, python, snake
 
 ## BackroundYoutube
+Android/BackroundYoutube
 
 yes I know I missed the g, not the first time
 
