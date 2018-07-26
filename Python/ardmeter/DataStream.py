@@ -2,9 +2,9 @@ import numpy as np
 
 """ Provides data in a 'stream' """
 class DataStream:
-	def __init__(self):
+	def __init__(self, device=0):
 		# initiate serial
-		self.initializeCommunication()
+		self.initializeCommunication(device)
 		
 		# outstanding values that have just come in
 		self._current = list()
@@ -44,7 +44,7 @@ class DataStream:
 			self._measurementsFromArray(np.random.random((update_size))*500))
 
 		self._time.extend(
-			self._measurementsFromArray(np.random.random((update_size))))
+			self._measurementsFromArray(np.array([x for x in range(len(self._time_history), len(self._time_history) + update_size)])))
 
 	def getNewData(self):
 		""" get updated measurements from device and return all recent """
@@ -74,25 +74,25 @@ class DataStream:
 
 		return results
 
-	def getAllDataNoUpdate(self):
-		""" return all data without updating from device """
+	def getAllDataNoUpdate(self, last_n=0):
+		""" return all data without updating from device, optionally only n data """
 		# return data in dictionary
 		results = dict()
 
 		# use copy to stop dictionary contents being deleted also
-		results.update({'current' : np.array(self._current_history)})
-		results.update({'voltage' : np.array(self._voltage_history)})
-		results.update({'power' : np.array(self._power_history)})
-		results.update({'time' : np.array(self._time_history)})
+		results.update({'current' : np.array(self._current_history[-last_n:])})
+		results.update({'voltage' : np.array(self._voltage_history[-last_n:])})
+		results.update({'power' : np.array(self._power_history[-last_n:])})
+		results.update({'time' : np.array(self._time_history[-last_n:])})
 		
 		return results
 
-	def getAllData(self):
+	def getAllData(self, last_n=0):
 		""" update data then return all """
 		self.getNewData()
 
-		return self.getAllDataNoUpdate()
+		return self.getAllDataNoUpdate(last_n)
 
-	def initializeCommunication(self, device=0):
+	def initializeCommunication(self, device):
 		""" begin serial comms with arduino or otherwise """
-		print("Initialized")
+		print("Initialized with device " + str(device))

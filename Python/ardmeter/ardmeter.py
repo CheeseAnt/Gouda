@@ -21,10 +21,10 @@ def draw_figure(canvas, figure, loc=(0, 0)):
 
 	# slap onto canvas
 	canvas.create_image(loc[0] + f_w/2, loc[1] + f_h/2, image=photo)
-	handle = tkagg.blit(photo, figure_canvas.get_renderer()._renderer, colormode=2)
+	tkagg.blit(photo, figure_canvas.get_renderer()._renderer, colormode=2)
 
 	# keep photo object alive or else it will disappear
-	return photo, handle
+	return photo
 
 # create canvas
 
@@ -53,11 +53,10 @@ for i in range(10):
 	ax.plot(X, Y)
 
 	# keep alive
-	fig_photo, plot_handle = draw_figure(canvas, fig)
+	fig_photo = draw_figure(canvas, fig)
 
 	#window.update_idletasks()
 	window.update()
 
-	sleep(1)
-
-	canvas.delete("all")
+	sleep(0.2)
+	ax.cla()
