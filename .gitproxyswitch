@@ -1,0 +1,19 @@
+#!/bin/bash
+prox=$( git config --global http.proxy )
+
+if [ "$prox" == "" ]; then
+  echo "Turning proxies on"
+  git config --global http.proxy http://proxy-chain.intel.com:911
+  git config --global https.proxy https://proxy-chain.intel.com:911
+  export http_proxy="http://proxy-chain.intel.com:911"
+  export https_proxy="https://proxy-chain.intel.com:911"
+  echo "Acquire::http::Proxy \"http://proxy-chain.intel.com:911\";" | sudo tee /etc/apt/apt.conf 1>/dev/null
+  echo "Acquire::https::Proxy \"http://proxy-chain.intel.com:912\";" | sudo tee -a /etc/apt/apt.conf 1>/dev/null
+else
+  echo "Turning proxies off"
+  git config --global http.proxy ""
+  git config --global https.proxy ""
+  export http_proxy=""
+  export https_proxy=""
+  echo "" | sudo tee /etc/apt/apt.conf 1>/dev/null
+fi
