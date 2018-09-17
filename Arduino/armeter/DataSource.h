@@ -3,10 +3,10 @@
 #define DATA_SOURCE_H
 
 #define DEFAULT_BAUD_RATE 115200
-#define COMMS_BEGIN "***"
 
 // various protocol units
 enum {
+	BUNDLE_SEPARATOR = '*',
 	VALUE_SEPARATOR = ';',
 
 	VALUE_VOLTAGE = 'v',

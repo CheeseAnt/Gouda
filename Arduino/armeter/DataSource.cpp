@@ -12,6 +12,8 @@ DataSource::DataSource() {
 
 /* Trickle the measured data to the serial communications */
 void DataSource::trickle(float voltage, float current, float power, unsigned long ptime) {
+	Serial.print(BUNDLE_SEPARATOR);
+	
 	Serial.print(VALUE_SEPARATOR);
 	Serial.print(VALUE_VOLTAGE);
 	Serial.print(voltage);
