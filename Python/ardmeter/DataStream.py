@@ -1,4 +1,17 @@
 import numpy as np
+import re
+from serial import Serial
+from serial.tools.list_ports import comports
+
+## debugging inserts false data
+DEBUG = False
+
+## default baud rate
+BAUD_RATE = 115200
+
+## regex expressions
+BUNDLE_REGEX = '\\*[vcpt\\d\\.\\;]+\\*'
+VALUE_REGEX = ';'
 
 """ Provides data in a 'stream' """
 class DataStream:
@@ -6,6 +19,12 @@ class DataStream:
 		# initiate serial
 		self.initializeCommunication(device)
 		
+		# serial device
+		self._device = None
+
+		# incoming buffer
+		self._buffer = str()
+
 		# outstanding values that have just come in
 		self._current = list()
 		self._voltage = list()
@@ -28,23 +47,64 @@ class DataStream:
 
 		return measurements
 
+	def _getValue(self, value):
+		return float(value[1:])
+
 	# TODO actually pull in the measurements
 	def _updateMeasurements(self):
 		""" get all recent measurements from device """
-		from random import random
-		update_size = round(random()*20)
+		if not DEBUG:
+			self._buffer += self._device.read_all()
 
-		self._current.extend(
-			self._measurementsFromArray(np.random.random((update_size))*10))
+			#self._buffer = "*v123.123;c123.133;p5433.32;t41223**v123.123;c123.133;p5433.32;t41223**v123.123;c123.133;p5433.32;t41223**v123.123;c123.133;p5433.32;t41223**v123.123;c123.133;p5433.32;t41223**v123.123;c123.133;p5433.32;t41223**v123.123;c123.133;p5433.32;t41223*"
 
-		self._voltage.extend(
-			self._measurementsFromArray(np.random.random((update_size))*50))
+			# separate incoming value bundles, removing the *
+			to_parse = [re.sub('\\*', '', bundle) for bundle in re.findall(BUNDLE_REGEX, self._buffer)]
 
-		self._power.extend(
-			self._measurementsFromArray(np.random.random((update_size))*500))
+			# remove the read values from the buffer
+			re.sub(BUNDLE_REGEX, '', self._buffer)
 
-		self._time.extend(
-			self._measurementsFromArray(np.array([x for x in range(len(self._time_history), len(self._time_history) + update_size)])))
+			# remove value separators
+			to_parse = [bundle.split(VALUE_REGEX) for bundle in to_parse]
+
+			# construct lists of values
+			current = list()
+			voltage = list()
+			power = list()
+			time = list()
+			for bundle in to_parse:
+				for value in bundle:
+					{
+					'v' : voltage,
+					'c' : current,
+					'p' : power,
+					't' : time
+					}[value[0]].append(self._getValue(value))
+
+			# append values
+			self._current.extend(current)
+
+			self._voltage.extend(voltage)
+
+			self._power.extend(power)
+
+			self._time.extend(time)
+
+		else:
+			from random import random
+			update_size = round(random()*20)
+
+			self._current.extend(
+				self._measurementsFromArray(np.random.random((update_size))*10))
+
+			self._voltage.extend(
+				self._measurementsFromArray(np.random.random((update_size))*50))
+
+			self._power.extend(
+				self._measurementsFromArray(np.random.random((update_size))*500))
+
+			self._time.extend(
+				self._measurementsFromArray(np.array([x for x in range(len(self._time_history), len(self._time_history) + update_size)])))
 
 	def getNewData(self):
 		""" get updated measurements from device and return all recent """
@@ -95,4 +155,12 @@ class DataStream:
 
 	def initializeCommunication(self, device):
 		""" begin serial comms with arduino or otherwise """
-		print("Initialized with device " + str(device))
+
+		if not DEBUG:
+			ports = comports()
+			assert(len(ports) > device)
+
+			# create device
+			self._device = Serial(port=ports[device], baudrate=BAUD_RATE)
+
+			print("Initialized with device " + str(ports[0]))
