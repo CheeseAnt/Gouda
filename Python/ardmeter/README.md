@@ -2,3 +2,4 @@
 tkinter
 matplotlib
 numpy
+pyserial
