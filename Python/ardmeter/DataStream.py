@@ -72,14 +72,17 @@ class DataStream:
 			voltage = list()
 			power = list()
 			time = list()
+
+			lists = {
+						'v' : voltage,
+						'c' : current,
+						'p' : power,
+						't' : time
+					}
+
 			for bundle in to_parse:
 				for value in bundle:
-					{
-					'v' : voltage,
-					'c' : current,
-					'p' : power,
-					't' : time
-					}[value[0]].append(self._getValue(value))
+					lists[value[0]].append(self._getValue(value))
 
 			# append values
 			self._current.extend(current)
