@@ -4,6 +4,8 @@
 OLED_Interface oled;
 Adafruit_INA219 ina219;
 
+void(* reset) (void) = 0;
+
 void setup() {
   Serial.begin(9600);
   
@@ -13,12 +15,16 @@ void setup() {
 }
 
 void loop() {
-  float v = ina219.getBusVoltage_V(), c = ina219.getCurrent_mA(), p = ina219.getPower_mW();
+  /*
   v = ina219.getBusVoltage_V(); c = ina219.getCurrent_mA(); p = ina219.getPower_mW();
+  
+  Serial.println(v);
+  Serial.println(c);
+  Serial.println(p);
+  Serial.println(millis());
+  */
+  oled.displayValues(ina219.getBusVoltage_V()*1000, ina219.getCurrent_mA(), ina219.getPower_mW(), millis());
 
-  Serial.println("before display");
-  oled.displayValues(v*1000, c, p, 0);
-
-  Serial.println("After display");
+  //Serial.println("After display");
   delay(200);
 }

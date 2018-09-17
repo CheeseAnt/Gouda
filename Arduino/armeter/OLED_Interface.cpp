@@ -20,7 +20,7 @@ void OLED_Interface::init() {
 }
 
 /* displays given measurements in a nice way */
-void OLED_Interface::displayValues(float voltage, float current, float power, long ptime) {
+void OLED_Interface::displayValues(float voltage, float current, float power, unsigned long ptime) {
 	display.clearDisplay(); // clear buffer
 	display.setCursor(0, 0);
 
@@ -33,13 +33,10 @@ void OLED_Interface::displayValues(float voltage, float current, float power, lo
 	display.print(F("Power: "));
 	this->printValue(power, POWER_UNIT);
 
-	Serial.println("before time");
 	display.print(F("Time: "));
-	this->printValue((float)millis(), TIME_UNIT);
-	Serial.println("after time");
+	this->printValue(ptime, TIME_UNIT);
 
 	display.display();
-	Serial.println("after display");
 }
 
 /* prints a user-friendly version of any value-unit pair */

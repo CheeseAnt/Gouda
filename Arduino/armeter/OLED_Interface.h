@@ -54,7 +54,7 @@ struct ScaledValue {
 class OLED_Interface {
 public:
 	void init(void);
-	void displayValues(float voltage, float current, float power, long time);
+	void displayValues(float voltage, float current, float power, unsigned long time);
 private:
 	ScaledValue scaleValue(float value);
 	void printValue(float value, const char ctype);
