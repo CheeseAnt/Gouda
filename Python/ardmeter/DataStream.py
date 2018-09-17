@@ -50,7 +50,7 @@ class DataStream:
 	def _getValue(self, value):
 		return float(value[1:])
 
-	# TODO actually pull in the measurements
+	# TODO look at how appending is being done, possibly unify - dislike how it is separate currently
 	def _updateMeasurements(self):
 		""" get all recent measurements from device """
 		if not DEBUG:
@@ -67,31 +67,18 @@ class DataStream:
 			# remove value separators
 			to_parse = [bundle.split(VALUE_REGEX) for bundle in to_parse]
 
-			# construct lists of values
-			current = list()
-			voltage = list()
-			power = list()
-			time = list()
-
+			# make dictionary for switch statement
 			lists = {
-						'v' : voltage,
-						'c' : current,
-						'p' : power,
-						't' : time
-					}
+				'v' : self._voltage,
+				'c' : self._current,
+				'p' : self._power,
+				't' : self._time
+			}
 
+			# add value to relevant list
 			for bundle in to_parse:
 				for value in bundle:
 					lists[value[0]].append(self._getValue(value))
-
-			# append values
-			self._current.extend(current)
-
-			self._voltage.extend(voltage)
-
-			self._power.extend(power)
-
-			self._time.extend(time)
 
 		else:
 			from random import random
