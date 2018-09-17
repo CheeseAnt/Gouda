@@ -24,9 +24,9 @@ void OLED_Interface::displayValues(float voltage, float current, float power, un
 	display.clearDisplay(); // clear buffer
 	display.setCursor(0, 0);
 
-  display.print(F("Voltage: "));
-  this->printValue(voltage, VOLTAGE_UNIT);
-  
+	display.print(F("Voltage: "));
+	this->printValue(voltage, VOLTAGE_UNIT);
+	  
 	display.print(F("Current: "));
 	this->printValue(current, CURRENT_UNIT);
 
