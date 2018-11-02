@@ -12,7 +12,11 @@ args = parser.parse_args()
 if(os.path.isdir(args.directory)):
     os.chdir(args.directory)
 
-    output = check_output("git log --author=\"" + args.author + "\" --pretty=tformat: --numstat").decode("utf-8")
+    comm = "git log --author=".split(" ")
+    comm.append(args.author)
+    comm.extend("--pretty=tformat: --numstat".split(" "))
+
+    output = check_output(comm).decode("utf-8")
 
     output = output.split("\n")
 
@@ -29,8 +33,8 @@ if(os.path.isdir(args.directory)):
             except ValueError:
                 print("Could not parse line: " + " ".join(line))
 
-    print("Author:", args.author, "contributed", lines_added, "lines added and", lines_deleted,
-            "lines deleted over", len(output), "commits.")
+    print("Author: " + args.author + " contributed " + str(lines_added) + " lines added and " +
+            str(lines_deleted) + " lines deleted over " + str(len(output)) + " commits.")
 
     print("Net Lines: " + str(lines_added - lines_deleted))
 else:
