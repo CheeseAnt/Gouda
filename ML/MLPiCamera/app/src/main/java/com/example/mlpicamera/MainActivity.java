@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView image_photo;
     private static File temp_file;
     private static final String tempFileName = "inferenceImage";
-    private static final String baseURL = "http://79.97.31.139:5000/";
+    private static final String baseURL = "http://x.x.x.x:5000/";
     private static final String flaskPOSTURL = baseURL + "infer";
     private TextView object_name;
 
