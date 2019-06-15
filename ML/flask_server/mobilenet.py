@@ -40,3 +40,5 @@ class MobileNet:
 
         print("Top 1 prediction: ", x.argmax(), self.label_map[x.argmax()], x.max())
 
+        return self.label_map[x.argmax()], x.max()        
+
