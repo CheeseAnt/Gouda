@@ -21,6 +21,7 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedOutputStream;
@@ -37,7 +38,9 @@ public class MainActivity extends AppCompatActivity {
     private ImageView image_photo;
     private static File temp_file;
     private static final String tempFileName = "inferenceImage";
-    private static final String flaskURL = "http://x.x.x.x:5000/infer";
+    private static final String baseURL = "http://79.97.31.139:5000/";
+    private static final String flaskPOSTURL = baseURL + "infer";
+    private TextView object_name;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -74,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navView = findViewById(R.id.nav_view);
         navView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         image_photo = findViewById(R.id.image_photo);
+        object_name = findViewById(R.id.object_name);
 
         try {
             temp_file = File.createTempFile(tempFileName, ".jpg", getExternalFilesDir(Environment.DIRECTORY_PICTURES));
@@ -115,15 +119,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void postRequest(Bitmap bm) {
-        new PostFile().execute(bm);
+        PostFile ps = new PostFile();
+        ps.execute(bm);
+
     }
 
     private class PostFile extends AsyncTask<Bitmap, Integer, Long> {
+        private String object;
+        private String accuracy;
+
         @Override
         protected Long doInBackground(Bitmap... bms) {
             HttpURLConnection client = null;
             try {
-                URL url = new URL(flaskURL);
+                URL url = new URL(flaskPOSTURL);
                 client = (HttpURLConnection) url.openConnection();
 
                 client.setRequestMethod("POST");
@@ -137,8 +146,12 @@ public class MainActivity extends AppCompatActivity {
                 outPost.flush();
                 outPost.close();
 
-                System.out.println("Code: " + client.getResponseCode());
-                System.out.println("Message: " + client.getResponseMessage());
+                if(client.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    object = client.getHeaderField("prediction");
+                    accuracy = client.getHeaderField("accuracy");
+
+                    System.out.println("Object: " + object + " with accuracy " + accuracy);
+                }
             }
             catch (MalformedURLException mEx) {
                 mEx.printStackTrace();
@@ -153,6 +166,21 @@ public class MainActivity extends AppCompatActivity {
                     client.disconnect();
             }
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Long aLong) {
+            super.onPostExecute(aLong);
+
+            String disp = object.split(",")[0] + " : " + accuracy;
+            object_name.setText(disp);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            object_name.setText("Sending POST Request...");
         }
     }
 }
