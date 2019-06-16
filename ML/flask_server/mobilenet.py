@@ -24,7 +24,7 @@ class MobileNet:
         inputs.set_shape((None, None, None, 3))
         inputs = tf.image.resize_images(inputs, (224, 224))
 
-        get the endpoints of the network
+        # get the endpoints of the network
         with tf.contrib.slim.arg_scope(mobilenet_v2.training_scope(is_training=False)):
           _, self.endpoints = mobilenet_v2.mobilenet(inputs)
           
