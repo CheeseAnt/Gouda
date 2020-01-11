@@ -9,7 +9,7 @@ BAUD_RATE = 115200
 ports = comports()
 
 # make sure the one we want is there
-assert(len(ports) > device_num, "The device {} specified was not found".format(device_num))
+assert len(ports) > device_num, "The device {} specified was not found".format(device_num)
 
 # create device
 device = Serial(port=ports[device_num], baudrate=BAUD_RATE)
