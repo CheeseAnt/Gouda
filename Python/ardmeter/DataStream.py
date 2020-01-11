@@ -16,12 +16,12 @@ VALUE_REGEX = ';'
 """ Provides data in a 'stream' """
 class DataStream:
 	def __init__(self, device=0):
-		# initiate serial
-		self.initializeCommunication(device)
-		
 		# serial device
 		self._device = None
 
+		# initiate serial
+		self.initializeCommunication(device)
+		
 		# incoming buffer
 		self._buffer = str()
 
