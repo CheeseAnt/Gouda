@@ -1,10 +1,9 @@
 import numpy as np
 import re
+
 from serial import Serial
 from serial.tools.list_ports import comports
-
-## debugging inserts false data
-DEBUG = False
+from math import sin, radians
 
 ## default baud rate
 BAUD_RATE = 115200
@@ -15,9 +14,10 @@ VALUE_REGEX = ';'
 
 """ Provides data in a 'stream' """
 class DataStream:
-	def __init__(self, device=0):
+	def __init__(self, device=0, debug=False):
 		# serial device
 		self._device = None
+		self._DEBUG = debug
 
 		# initiate serial
 		self.initializeCommunication(device)
@@ -39,7 +39,7 @@ class DataStream:
 
 	def _measurementsFromArray(self, values):
 		# check that array is 1-D
-		assert(len(values.shape) == 1, 'Measurements are not 1-D')
+		assert len(values.shape) == 1, 'Measurements are not 1-D'
 
 		measurements = list()
 		for x in range(len(values)):
@@ -53,7 +53,7 @@ class DataStream:
 	# TODO look at how appending is being done, possibly unify - dislike how it is separate currently
 	def _updateMeasurements(self):
 		""" get all recent measurements from device """
-		if not DEBUG:
+		if not self._DEBUG:
 			self._buffer += self._device.read_all()
 
 			#self._buffer = "*v123.123;c123.133;p5433.32;t41223**v123.123;c123.133;p5433.32;t41223**v123.123;c123.133;p5433.32;t41223**v123.123;c123.133;p5433.32;t41223**v123.123;c123.133;p5433.32;t41223**v123.123;c123.133;p5433.32;t41223**v123.123;c123.133;p5433.32;t41223*"
@@ -82,19 +82,19 @@ class DataStream:
 
 		else:
 			from random import random
-			update_size = round(random()*20)
-
+			update_size = 1 # round(random()*20)
+			time = np.array([x for x in range(len(self._time_history), len(self._time_history) + update_size)])
 			self._current.extend(
 				self._measurementsFromArray(np.random.random((update_size))*10))
 
 			self._voltage.extend(
-				self._measurementsFromArray(np.random.random((update_size))*50))
+				self._measurementsFromArray(np.array([sin(radians(x * 10)) for x in time])*50)) # np.random.random((update_size))*50))
 
 			self._power.extend(
 				self._measurementsFromArray(np.random.random((update_size))*500))
 
 			self._time.extend(
-				self._measurementsFromArray(np.array([x for x in range(len(self._time_history), len(self._time_history) + update_size)])))
+				self._measurementsFromArray(time))
 
 	def getNewData(self):
 		""" get updated measurements from device and return all recent """
@@ -146,9 +146,9 @@ class DataStream:
 	def initializeCommunication(self, device):
 		""" begin serial comms with arduino or otherwise """
 
-		if not DEBUG:
+		if not self._DEBUG:
 			ports = comports()
-			assert(len(ports) > device)
+			assert len(ports) > device
 
 			# create device
 			self._device = Serial(port=ports[device], baudrate=BAUD_RATE)
