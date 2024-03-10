@@ -1,19 +1,23 @@
 /*************************************************************
+ * 
+ * Settings: NodeMCU 1.0 ESP-12E, 115200 Baud Rate, rest default.
  *************************************************************/
 
 /* Comment this out to disable prints and save space */
 #define BLYNK_PRINT Serial
 
+/* Fill-in information from Blynk Device Info here */
+#define BLYNK_TEMPLATE_ID           "TMPLKw1shchI"
+#define BLYNK_TEMPLATE_NAME         "Quickstart Device"
+#define BLYNK_AUTH_TOKEN            "rvWK2pOLG0LoiUeYNLZoE45vi6EV0g7x"
+
 #include <ESP8266WiFi.h>
 #include <BlynkSimpleEsp8266.h>
 #include <EEPROM.h>
 
-// Blynk Auth Token
-char auth[] = "09eebc0c6c574c3c85ff912858cf6b94";
-
 // WiFi Credentials
-char ssid[] = "HUAWEI-B535-B4B7";
-char pass[] = "4QQF79BDBBG";
+char ssid[] = "Iron WAN";
+char pass[] = "lizzie092611";
 
 // EEPROM Byte locations
 int RED_EE = 0x00;
@@ -152,7 +156,10 @@ void readEEPROM() {
 
 void setup()
 {
-  Blynk.begin(auth, ssid, pass);
+  Serial.begin(115200);
+  Serial.println("Starting auth");
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+  Serial.println("Done auth");
 
   // set up pins
   pinMode(RED_OUT, OUTPUT);

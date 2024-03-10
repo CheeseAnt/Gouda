@@ -43,7 +43,7 @@ fig.add_axes([0, 0, 1, 1])
 ax = fig.add_subplot(111)
 print(dir(ax))
 
-dstream = DataStream()
+dstream = DataStream(debug=True)
 
 fcanvas = FigureCanvas(frame, -1, fig)
 frame.Bind(wx.EVT_UPDATE_UI, lambda evt : updatePlot(evt, fcanvas, ax, dstream))
