@@ -1,0 +1,6 @@
+sanic
+sanic-cors
+spotipy
+ticketpy
+uvicorn
+sqlite3

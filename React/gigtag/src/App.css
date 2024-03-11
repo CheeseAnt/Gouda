@@ -36,3 +36,23 @@
     transform: rotate(360deg);
   }
 }
+
+.user-info {
+  margin: 15px;
+  padding: 10px;
+  background-color: cadetblue;
+  border-radius: 10px;
+  place-items: center;
+}
+
+.playlist {
+  background-color: aliceblue;
+  border-radius: 10px;
+  place-items: center;
+  padding: 10px;
+  margin: 10px;
+}
+
+.spot-tabs {
+  
+}
