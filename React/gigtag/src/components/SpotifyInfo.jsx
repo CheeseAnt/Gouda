@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getUserInfo, refreshUserPlaylists, getUserPlaylists, togglePlaylist } from '../api'
-import { Spinner } from 'react-bootstrap'
+import { Loader } from './Loader';
 
 const SpotifyUserInfo = ( {setInvalid, children} ) => {
-    const [name, setName] = useState("");
-    const [id, setID] = useState("");
-    const [image, setImage] = useState("");
+    const [userInfo, setUserInfo] = useState({});
 
     if(!(children instanceof Array)) {
         children = [children];
@@ -21,28 +19,29 @@ const SpotifyUserInfo = ( {setInvalid, children} ) => {
         }
 
         const json = await res.json();
-        
-        setName(json.name);
-        setID(json.id);
-        setImage(json.photo_url);
-    }, [setInvalid, setName, setID, setImage]);
+
+        setUserInfo(json);
+    }, [setInvalid, setUserInfo]);
 
     useEffect(() => {
         getUser();
     }, [getUser]);
 
-    return <div>
+    return <div className='d-grid' style={{justifyItems: 'center'}}>
         <div className='d-flex user-info' style={{justifyContent: 'space-between'}}>
-            <div className='d-flex'>
-                <img className='me-3 rounded-circle' alt='Profile' style={{width: "64px"}} src={image} />
-                <h1 className='fw-bold mx-2'>{name}</h1>
-                <h3 className='text-muted mx-3'>{id}</h3>
+            <div className='d-flex' style={{alignItems: 'center'}}>
+                <img className='me-3 rounded-circle' alt='Profile' style={{width: "64px", height: "64px"}} src={userInfo.photo_url} />
+                <h1 className='fw-bold mx-2'>{userInfo.name}</h1>
+                <div className='d-grid mx-2'>
+                    <span className='text-muted'>Playlists: {userInfo.playlists}</span>
+                    <span className='text-muted'>Artists: {userInfo.artists}</span>
+                </div>
             </div>
             <div className='spot-tabs mx-3 d-flex'>
                 {children.map(c => 
                     <button 
                         key={c.props.name}
-                        className='btn btn-secondary mx-1'
+                        className={(c.props.name===tab ? 'active ': '') + 'btn btn-secondary mx-1'}
                         onClick={() => setTab(c.props.name)}>
                             {c.props.name}
                     </button>
@@ -86,6 +85,7 @@ const SpotifyPlaylists = () => {
         const res = await getUserPlaylists();
         if(!res.ok) {
             console.log("Error loading playlists: ", res)
+            setLoading(false);
             return;
         }
         const json = await res.json();
@@ -121,22 +121,27 @@ const SpotifyPlaylists = () => {
 
     return <div>
         {
-            loading ? <Spinner></Spinner> :
+            loading ? <Loader /> :
             <div className='container'>
                 <button className='btn btn-info px-10 w-100' onClick={refreshPlaylists}>Refresh from Spotify</button>
+                <h4 className="text-muted">Total Playlists: {Object.keys(playlists).length}</h4>
                 {Object.values(playlists).map(playlist => {
-                    return <div key={playlist.id} className='playlist d-flex' style={{justifyContent: 'space-between'}}>
-                        <div>
-                            <h1 className='fw-bold mx-3'>{playlist.name}</h1>
-                            <div className='d-flex'>
-                                <h3 className='mx-3 text-muted'>{playlist.track_count}</h3>
-                                <h3 className='mx-3 text-muted'>{playlist.id}</h3>
-                                <h3 className='mx-3 text-muted'>{playlist.owner}</h3>
+                    return <div key={playlist.id} className='playlist d-flex'>
+                        <img className='me-3' alt='Playlist' style={{width: "64px"}} src={playlist.image_url} />
+                        <div className='d-flex w-100' style={{justifyContent: 'space-between'}}>
+                            <div>
+                                <h1 className='fw-bold mx-3'>{playlist.name}</h1>
+                                <h3 className='mx-3 text-muted'>{playlist.last_updated}</h3>
+                                <div className='d-flex'>
+                                    <h3 className='mx-3 text-muted'>Tracks: {playlist.track_count}</h3>
+                                    <h3 className='mx-3 text-muted'>{playlist.public ? 'Public' : 'Private'}</h3>
+                                    <h3 className='mx-3 text-muted'>{playlist.owner}</h3>
+                                </div>
                             </div>
+                            <button className='btn btn-info m-3 px-4' style={{fontSize: 'xxx-large'}} data-mdb-toggle="button" onClick={() => togglePl(playlist)}>
+                                {playlist.enabled ? '☑' : '☐'}
+                            </button>
                         </div>
-                        <button className='btn btn-info m-3 px-4' style={{fontSize: 'xxx-large'}} data-mdb-toggle="button" onClick={() => togglePl(playlist)}>
-                            {playlist.enabled ? '☑' : '☐'}
-                        </button>
                     </div>
                 })}
             </div>

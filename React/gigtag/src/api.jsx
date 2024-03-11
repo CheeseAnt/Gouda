@@ -34,4 +34,16 @@ async function togglePlaylist(id, enable) {
     return await makeRequest("toggle_playlist", {id: id, enabled: enable})
 }
 
-export { getUserInfo, getUserPlaylists, refreshUserPlaylists, togglePlaylist }
+async function toggleArtist(name, enable) {
+    return await makeRequest("toggle_artist", {name: name, enabled: enable})
+}
+
+async function getuserArtists() {
+    return await makeRequest("user_artists")
+}
+
+async function refreshUserArtists() {
+    return await makeRequest("user_artists?fresh=1")
+}
+
+export { getUserInfo, getUserPlaylists, refreshUserPlaylists, togglePlaylist, getuserArtists, refreshUserArtists, toggleArtist }

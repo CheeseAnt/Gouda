@@ -1,7 +1,8 @@
+import asyncio
 from sanic import Sanic, Request, response
 from sanic.response import text
 from sanic_cors import CORS
-from . import middleware
+from . import middleware, ticketmaster
 
 app = Sanic("gigtag-be")
 
@@ -14,12 +15,15 @@ async def user_info(request: Request):
 
 @app.get("user_playlists")
 async def user_playlists(request: Request):
-    return response.JSONResponse({pl.id: pl.as_dict() for pl in request.ctx.user.get_playlists()})
+    playlists = await asyncio.to_thread(request.ctx.user.get_playlists)
+    return response.JSONResponse({pl.id: pl.as_dict() for pl in playlists})
 
 @app.get("refresh_playlists")
 async def refresh_playlists(request: Request):
-    request.ctx.user.refresh_playlists()
-    return response.JSONResponse({pl.id: pl.as_dict() for pl in request.ctx.user.get_playlists()})
+    await asyncio.to_thread(request.ctx.user.refresh_playlists)
+    playlists = await asyncio.to_thread(request.ctx.user.get_playlists)
+
+    return response.JSONResponse({pl.id: pl.as_dict() for pl in playlists})
 
 @app.post("toggle_playlist")
 async def toggle_playlist(request: Request):
@@ -28,3 +32,19 @@ async def toggle_playlist(request: Request):
     request.ctx.user.toggle_playlist(id=json['id'], value=json['enabled'])
 
     return response.HTTPResponse()
+
+@app.post("toggle_artist")
+async def toggle_artist(request: Request):
+    json = request.json
+
+    request.ctx.user.toggle_artist(name=json['name'], value=json['enabled'])
+    return response.HTTPResponse()
+
+@app.get("user_artists")
+async def get_artists(request: Request):
+    return response.JSONResponse({a.name: a.as_dict() for a in await asyncio.to_thread(request.ctx.user.get_enabled_artists, "fresh" in request.args)})
+
+@app.after_server_start
+async def start_ticketmaster_api(app, loop):
+    await ticketmaster.start()
+    print("Started Ticketmaster Thread")

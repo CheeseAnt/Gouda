@@ -43,6 +43,7 @@
   background-color: cadetblue;
   border-radius: 10px;
   place-items: center;
+  width: 90%;
 }
 
 .playlist {
@@ -54,5 +55,18 @@
 }
 
 .spot-tabs {
-  
+
 }
+
+.spotify-font {
+  font-family: Gotham-Black;
+}
+
+.centered-container {
+  display: flex; /* Enable flexbox for the container */
+  justify-content: center; /* Horizontally center elements */
+  align-items: center; /* Vertically center elements */
+  text-align: center;
+  height: 100vh;
+}
+

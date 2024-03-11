@@ -4,3 +4,4 @@ spotipy
 ticketpy
 uvicorn
 sqlite3
+python-dotenv

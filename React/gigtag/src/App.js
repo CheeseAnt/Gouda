@@ -21,7 +21,7 @@ const App = () => {
       localStorage.clear("spotifyAuthToken");
     }
   }, [setInvalidToken]);
-
+  
   return (
     <div className='app'>
       {!invalidToken && token ? (
@@ -33,12 +33,17 @@ const App = () => {
         </div>
       ) : (
         // Display the login page
-        <SpotifyAuth
-          redirectUri={process.env.REACT_APP_REDIRECT_URI ?? 'http://localhost:3000'}
-          clientID={process.env.REACT_APP_CLIENT_ID}
-          scopes={[Scopes.userReadPrivate, Scopes.userReadEmail, Scopes.playlistReadPrivate, Scopes.playlistReadCollaborative]}
-          onAccessToken={(token) => {setToken(token); resetInvalid(false);}}
-        />
+        <div className='centered-container'>
+          <div>
+            <h1 className='spotify-font'><b>GigTag</b></h1>
+            <SpotifyAuth
+              redirectUri={process.env.REACT_APP_REDIRECT_URI ?? 'http://localhost:3000'}
+              clientID={process.env.REACT_APP_CLIENT_ID}
+              scopes={[Scopes.userReadPrivate, Scopes.userReadEmail, Scopes.playlistReadPrivate, Scopes.playlistReadCollaborative, Scopes.userLibraryRead]}
+              onAccessToken={(token) => {setToken(token); resetInvalid(false);}}
+            />
+          </div>
+        </div>
       )}
     </div>
   )
