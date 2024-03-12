@@ -28,15 +28,14 @@ const useArtists = () => {
 
     const refreshArtists = useCallback(async () => {
         if(loading) {
-            setLoading(false);
-            console.log("Failed to fetch user artists", res)
             return;
         }
         setLoading(true);
         const res = await refreshUserArtists();
 
         if(!res.ok) {
-            console.log("Failed to fetch user artists")
+            setLoading(false);
+            console.log("Failed to fetch user artists", res)
             return;
         }
 
@@ -60,7 +59,7 @@ const useArtists = () => {
             return;
         }
         getArtists()
-    }, [getArtists, artists]);
+    }, [getArtists, artists, done]);
 
     return { artists, loading, refreshArtists, toggleAr };
 }

@@ -138,6 +138,26 @@ class User():
 
         playlists = [p for p in self.get_playlists() if p.enabled]
 
+        class ArtistCounter:
+            def __init__(self):
+                self.counts = dict()
+            
+            def add(self, artist: str):
+                if artist in ("", None):
+                    return
+
+                self.counts[artist] = self.counts.get(artist, 0) + 1
+            
+            def update(self, other: ArtistCounter):
+                for artist, count in other.counts:
+                    self.counts[artist] = self.counts.get(artist, 0) + count
+            
+            def set(self):
+                return set(self.counts)
+            
+            def subset(self, sub: set) -> dict:
+                return {k:v for k,v in self.counts.items() if k in sub}
+
         def get_playlist_artists(playlist_id: str) -> set[str]:
             if playlist_id == "0":
                 ret_method = lambda playlist_id, fields, offset, limit: self._api.current_user_saved_tracks(offset=offset, limit=limit)
@@ -156,7 +176,8 @@ class User():
 
                 items.extend(items_in['items'])
 
-            artists = set()
+            artists = ArtistCounter()
+
             for item in items:
                 try:
                     for artist in item['track']['artists']:
@@ -166,21 +187,26 @@ class User():
                         
             return artists
 
-        artists = set()
+        artists = ArtistCounter()
+
         with ThreadPoolExecutor(max_workers=4) as pool:
             results = [pool.submit(get_playlist_artists, p.id) for p in playlists]
 
         for result in results:
             artists.update(result.result())
 
-        artists = set(filter(None, artists))
-
         existings = {artist['name'] for artist in existing_artists}
-        to_add = artists.difference(existings)
-        to_delete = existings.difference(artists)
 
-        for artist in to_add:
-            database.insert_artist(user_id=self.id, name=artist, enabled=True)
+        artists_set = artists.set()
+        to_add = artists_set.difference(existings)
+        to_update = artists_set.intersection(existings)
+        to_delete = existings.difference(artists_set)
+
+        for artist, tracks in artists.subset(to_add).items():
+            database.insert_artist(user_id=self.id, name=artist, tracks=tracks, enabled=True)
+
+        for artist, tracks in artists.subset(to_add).items():
+            database.update_artist(user_id=self.id, name=artist, tracks=tracks)
 
         for artist in to_delete:
             database.delete_artist(user_id=self.id, name=artist)

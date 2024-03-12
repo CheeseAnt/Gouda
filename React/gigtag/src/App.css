@@ -62,6 +62,10 @@
   font-family: Gotham-Black;
 }
 
+.spotify-font-normal {
+  font-family: GothamBold;
+}
+
 .centered-container {
   display: flex; /* Enable flexbox for the container */
   justify-content: center; /* Horizontally center elements */

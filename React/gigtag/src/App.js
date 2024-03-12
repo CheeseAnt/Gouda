@@ -34,8 +34,9 @@ const App = () => {
       ) : (
         // Display the login page
         <div className='centered-container'>
-          <div>
-            <h1 className='spotify-font'><b>GigTag</b></h1>
+          <div className='d-grid'>
+            <h1 className='spotify-font mb-5'><b>GigTag</b></h1>
+            <h4 className='text-muted spotify-font-normal mb-5 text-uppercase'>Find local gigs for the bands <i>you</i> listen to</h4>
             <SpotifyAuth
               redirectUri={process.env.REACT_APP_REDIRECT_URI ?? 'http://localhost:3000'}
               clientID={process.env.REACT_APP_CLIENT_ID}
