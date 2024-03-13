@@ -42,8 +42,8 @@ async function getuserArtists() {
     return await makeRequest("user_artists")
 }
 
-async function getArtistEvents(artist) {
-    return await makeRequest("artist_events", {artist: artist})
+async function getArtistEvents(artist, refresh=false) {
+    return await makeRequest("artist_events", {artist: artist, refresh: refresh})
 }
 
 async function getUserSettings() {
@@ -54,8 +54,13 @@ async function updateUserCountries(countries) {
     return await makeRequest("update_user_countries", {countries: countries})
 }
 
+async function getUserCountryEnabledEvents() {
+    return await makeRequest("user_events")
+}
+
+
 async function refreshUserArtists() {
     return await makeRequest("user_artists?fresh=1")
 }
 
-export { getUserInfo, getUserPlaylists, refreshUserPlaylists, togglePlaylist, getuserArtists, refreshUserArtists, toggleArtist, getArtistEvents, getUserSettings, updateUserCountries }
+export { getUserInfo, getUserPlaylists, refreshUserPlaylists, togglePlaylist, getuserArtists, refreshUserArtists, toggleArtist, getArtistEvents, getUserSettings, updateUserCountries, getUserCountryEnabledEvents }

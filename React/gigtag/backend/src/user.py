@@ -242,3 +242,6 @@ class User():
 
     def get_artist_events(self, artist: str) -> list[Event]:
         return [Event(**row) for row in database.get_artist_events(artist=artist)]
+    
+    def get_country_enabled_events(self) -> list[dict]:
+        return database.get_user_country_specific_enabled_events(user_id=self.id)

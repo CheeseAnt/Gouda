@@ -216,6 +216,14 @@ def get_unique_enabled_artist_ids():
         cur = con.execute(f"""SELECT DISTINCT i.id, i.name FROM ARTIST_ID i JOIN ARTIST t ON i.name=t.name WHERE t.enabled""")
         return cur.fetchall()
 
+def get_artist_id(name: str):
+    with Connection() as con:
+        cur = con.execute(f"""SELECT i.id, i.name FROM ARTIST_ID i WHERE i.name=:name""", {'name': name})
+        try:
+            return cur.fetchone()
+        except:
+            return None
+
 def get_unique_enabled_artist_no_id():
     with Connection() as con:
         cur = con.execute(f"""SELECT distinct a.name FROM ARTIST a LEFT JOIN ARTIST_ID ai ON a.name=ai.name WHERE a.enabled AND ai.name IS NULL""")
@@ -286,6 +294,8 @@ def insert_event(artist_id: str, event_id: str, event_details: dict, start: date
                 'start': start, 'onsale': onsale, 'presale': presale, 'venue': venue, 'country': country})
             con.commit()
         except Exception as e:
+            con.rollback()
+            con.close()
             raise Duplicate(f"Error inserting event for artist {artist_id}: {e}") from e
 
 def update_event(artist_id: str, event_id: str, **kwargs: dict):
@@ -320,6 +330,23 @@ def delete_passed_events():
 
         con.commit()
 
+def get_user_country_specific_enabled_events(user_id: str):
+    countries = get_user(user_id=user_id)['countries']
+    
+    if countries:
+        countries = countries.split(",")
+
+    country_clause = f"e.country in ({','.join('?'*len(countries))})" if countries else "1"
+
+    with Connection() as con:
+        cur = con.execute(f"""
+        SELECT e.* FROM EVENT e
+        JOIN ARTIST_ID ai ON e.artist_id=ai.id
+        JOIN ARTIST a on a.name=ai.name
+        WHERE a.enabled and {country_clause}
+        """, countries)
+        
+        return [dict(**row) for row in cur.fetchall()]
 
 if __name__ == '__main__':
     # print(get_unique_enabled_artist_ids())

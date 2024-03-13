@@ -51,6 +51,9 @@ async def user_settings(request: Request):
 @app.post("artist_events")
 async def artist_events(request: Request):
     json = request.json
+    
+    if json.get("refresh"):
+        await asyncio.to_thread(ticketmaster.update_artist_events_for_one_name, artist=json['artist'])
 
     return response.JSONResponse([a.as_dict() for a in await asyncio.to_thread(request.ctx.user.get_artist_events, json['artist'])])
 
@@ -61,6 +64,18 @@ async def update_user_countries(request: Request):
     await asyncio.to_thread(request.ctx.user.update_settings, countries=json['countries'])
 
     return response.HTTPResponse()
+
+@app.get("user_events")
+async def user_events(request: Request):
+    return response.JSONResponse(await asyncio.to_thread(request.ctx.user.get_country_enabled_events))
+
+@app.get("telegram-login")
+async def telegram_login(request: Request):
+    path = 'https://oauth.telegram.org/embed/GigTag_bot?origin=http%3A%2F%2Fgigtag.duckdns.org%3A3000&return_to=http%3A%2F%2Fgigtag.duckdns.org%3A3000%2F%23&size=large&userpic=true&request_access=true&lang=en'
+    import requests
+    resp = requests.get(path)
+    print(resp, resp.status_code, resp.content)
+    return response.html(body=resp.content, status=resp.status_code)
 
 @app.after_server_start
 async def start_ticketmaster_api(app, loop):

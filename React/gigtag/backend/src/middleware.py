@@ -37,6 +37,9 @@ def get_user(auth_token: str) -> user.User:
 def activate(app: sanic.Sanic):
     @app.on_request
     def has_spotify_token(request: sanic.Request):
+        if request.path == '/telegram-login':
+            return
+
         _process_request(request=request)
 
         if not request.ctx.user:

@@ -13,6 +13,77 @@ def same_artist(artist_one: str, artist_two: str) -> bool:
 def format_time(t: datetime):
     return t.strftime('%Y-%m-%dT%H:%M:%SZ')
 
+def get_or_resolve_artist(api: ticketpy.ApiClient, artist: str) -> str:
+    """Get the ID for one artist name
+
+    Args:
+        artist (str): Artist Name
+
+    Returns:
+        str: Artist ID
+    """
+    artist_id = database.get_artist_id(name=artist)
+    if not artist_id:
+        artist_id = resolve_one_artist(api=api, artist=artist)
+    
+    return artist_id
+
+def get_attraction_events(api: ticketpy.ApiClient, attraction_ids: str):
+    """Resolves all the events for a specific set of attractions
+
+    Args:
+        attraction_ids (str): Attraction ids in a comma separated string
+    """
+    for page in api.events.find(attraction_id=attraction_ids, size=200):
+        for event in page:
+            for attraction in event.attractions:
+                print(f"Adding event for artist {attraction.name}, event {event.name} at {event.utc_datetime}")
+                try:
+                    database.insert_event(
+                        artist_id=attraction.id,
+                        event_id=event.id,
+                        event_details=event.json,
+                        start=event.utc_datetime,
+                        onsale=event.sales.public.start,
+                        presale=",".join(p.start for p in event.sales.presales),
+                        venue=f"{event.venues[0].city}: {event.venues[0].name}",
+                        country=event.venues[0].json['country']['countryCode']
+                    )
+                except database.Duplicate:
+                    database.update_event(
+                        artist_id=attraction.id,
+                        event_id=event.id,
+                        event_details=event.json,
+                        start=event.utc_datetime,
+                        onsale=event.sales.public.start,
+                        presale=",".join(p.start for p in event.sales.presales),
+                        venue=f"{event.venues[0].city}: {event.venues[0].name}",
+                        country=event.venues[0].json['country']['countryCode']
+                    )
+                except Exception as ex:
+                    print(f"Failed to add event for artist {attraction.name}, event {event.name}: {ex}")
+
+def resolve_one_artist(api: ticketpy.ApiClient, artist: str) -> str:
+    """
+    Resolve the ID for one artist
+
+    Args:
+        artist (str): Artist Name
+
+    Returns:
+        str: Artist ID
+    """
+    for page in api.attractions.find(keyword=artist, size=200):
+        if int(page.json['rate']['Rate-Limit-Available']) < 500:
+            print("Cannot continue queries, not enough rate available")
+            return
+        
+        for attraction in page:
+            if same_artist(attraction.name, artist):
+                print("Found a match", attraction.name, artist, attraction.id)
+                database.insert_artist_id(name=artist, id=attraction.id)
+                return attraction.id
+
 def resolve_new_artists(api: ticketpy.ApiClient):
     """
     Get all the artists that are new in the DB that have not been found in TM yet
@@ -21,23 +92,16 @@ def resolve_new_artists(api: ticketpy.ApiClient):
     print(f"Resolving {len(artists_to_get)} artists")
     
     for artist in artists_to_get:
-        found = False
-        for page in api.attractions.find(keyword=artist, size=200):
-            if int(page.json['rate']['Rate-Limit-Available']) < 500:
-                print("Cannot continue queries, not enough rate available")
-                return
-            
-            for attraction in page:
-                if same_artist(attraction.name, artist):
-                    print("Found a match", attraction.name, artist, attraction.id)
-                    database.insert_artist_id(name=artist, id=attraction.id)
-                    found = True
-                    break
-
-            if found:
-                break
-
+        resolve_one_artist(api=api, artist=artist)
+        
 def get_artist_events(api: ticketpy.ApiClient, chunk: int=50):
+    """
+    Get all the upcoming events for all enabled artists in the DB
+
+    Args:
+        api (ticketpy.ApiClient): ticketmaster Api Object
+        chunk (int, optional): Chunk size to get events by. Defaults to 50.
+    """
     artists = {a['id']: a['name'] for a in database.get_unique_enabled_artist_ids()}
     
     artist_ids = list(artists.keys())
@@ -46,34 +110,16 @@ def get_artist_events(api: ticketpy.ApiClient, chunk: int=50):
         artist_id_chunk = artist_ids[start_idx: start_idx+chunk]
         attraction_ids = ",".join(artist_id_chunk)
 
-        for page in api.events.find(attraction_id=attraction_ids, size=200):
-            for event in page:
-                for attraction in event.attractions:
-                    print(f"Adding event for artist {attraction.name}, event {event.name} at {event.utc_datetime}")
-                    try:
-                        database.insert_event(
-                            artist_id=attraction.id,
-                            event_id=event.id,
-                            event_details=event.json,
-                            start=event.utc_datetime,
-                            onsale=event.sales.public.start,
-                            presale=",".join(p.start for p in event.sales.presales),
-                            venue=f"{event.venues[0].city}: {event.venues[0].name}",
-                            country=event.venues[0].json['country']['countryCode']
-                        )
-                    except database.Duplicate:
-                        database.update_event(
-                            artist_id=attraction.id,
-                            event_id=event.id,
-                            event_details=event.json,
-                            start=event.utc_datetime,
-                            onsale=event.sales.public.start,
-                            presale=",".join(p.start for p in event.sales.presales),
-                            venue=f"{event.venues[0].city}: {event.venues[0].name}",
-                            country=event.venues[0].json['country']['countryCode']
-                        )
-                    except Exception as ex:
-                        print(f"Failed to add event for artist {attraction.name}, event {event.name}: {ex}")
+        get_attraction_events(api=api, attraction_ids=attraction_ids)
+
+def update_artist_events_for_one_name(artist: str):
+    api = ticketpy.ApiClient(api_key=settings.TICKETMASTER_API_KEY)
+    artist_id = get_or_resolve_artist(api=api, artist=artist)
+    
+    if not artist_id:
+        return []
+
+    get_attraction_events(api=api, attraction_ids=artist_id)
 
 def sleep_until(target_time: str):
     # Get current time

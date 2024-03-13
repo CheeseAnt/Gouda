@@ -18,6 +18,7 @@ const useArtists = () => {
 
         if(!res.ok) {
             setLoading(false);
+            setDone(true);
             console.log("Failed to fetch user artists", res)
             return;
         }
@@ -25,7 +26,7 @@ const useArtists = () => {
         setArtists(await res.json());
         setLoading(false);
         setDone(true);
-    }, [loading, setArtists, setLoading]);
+    }, [loading, setArtists, setLoading, setDone]);
 
     const refreshArtists = useCallback(async () => {
         if(loading) {
