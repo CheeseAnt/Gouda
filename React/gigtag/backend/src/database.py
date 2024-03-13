@@ -91,6 +91,18 @@ def insert_user(user_id: str, email: str):
 
         con.commit()
 
+def update_user(user_id: str, kwargs: dict):
+    with Connection() as con:
+        keys = list(kwargs.keys())
+
+        cur = con.execute(f"""
+    UPDATE USER SET
+    {",".join(key + '=:' + key for key in keys)}
+    WHERE id=:user_id
+                    """, {'user_id': user_id, **kwargs})
+
+        con.commit()
+
 def update_playlist_time(user_id: str):
     with Connection() as con:
         cur = con.execute("UPDATE USER SET last_updated_playlists=:time WHERE id=:user_id", {"time": datetime.utcnow(), "user_id": user_id})
@@ -302,11 +314,18 @@ def get_artist_events(artist: str):
 
     return events
 
+def delete_passed_events():
+    with Connection() as con:
+        cur = con.execute(f"""DELETE FROM EVENT WHERE start<=:now""", {'now': datetime.utcnow()})
+
+        con.commit()
+
+
 if __name__ == '__main__':
     # print(get_unique_enabled_artist_ids())
     with Connection() as con:
-        # cur = con.execute("ALTER TABLE USER ADD COLUMN countries text")
-        # con.commit()
+        cur = con.execute("ALTER TABLE USER ADD COLUMN countries text")
+        con.commit()
         
         # cur = con.execute("SELECT * FROM ARTIST", {'start': datetime.utcnow()})
         print(cur.fetchall()[0][:])

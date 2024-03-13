@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getUserInfo, refreshUserPlaylists, getUserPlaylists, togglePlaylist } from '../api'
 import { Loader } from './Loader';
+import { Button } from 'react-bootstrap';
+import { Logout, Settings } from '@mui/icons-material';
+import UserSettings from './UserSettings';
 
 const SpotifyUserInfo = ( {setInvalid, children} ) => {
     const [userInfo, setUserInfo] = useState({});
@@ -27,11 +30,23 @@ const SpotifyUserInfo = ( {setInvalid, children} ) => {
         getUser();
     }, [getUser]);
 
+    const logOut = () => {
+        setInvalid(true);
+    };
+
+    const [showS, setShowS] = useState(false);
+    const showSettings = () => {
+        setShowS(true);
+    };
+
     return <div className='d-grid' style={{justifyItems: 'center'}}>
+        <UserSettings show={showS} setShow={setShowS} user={userInfo} />
         <div className='d-flex user-info' style={{justifyContent: 'space-between'}}>
             <div className='d-flex' style={{alignItems: 'center'}}>
                 <img className='me-3 rounded-circle' alt='Profile' style={{width: "64px", height: "64px"}} src={userInfo.photo_url} />
                 <h1 className='fw-bold mx-2'>{userInfo.name}</h1>
+                <Button className='btn btn-secondary mx-1' onClick={showSettings}><Settings /></Button>
+                <Button className='btn btn-secondary mx-1' onClick={logOut}><Logout /></Button>
                 <div className='d-grid mx-2'>
                     <span className='text-muted'>Playlists: {userInfo.playlists}</span>
                     <span className='text-muted'>Artists: {userInfo.artists}</span>

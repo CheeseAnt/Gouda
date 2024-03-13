@@ -61,6 +61,12 @@ class User():
     def __post_init__(self):
         if not database.get_user(user_id=self.id):
             database.insert_user(user_id=self.id, email=self.email)
+    
+    def get_settings(self):
+        return dict(**database.get_user(user_id=self.id))
+
+    def update_settings(self, **kwargs):
+        database.update_user(user_id=self.id, kwargs=kwargs)
 
     def as_dict(self):
         sd = asdict(self)

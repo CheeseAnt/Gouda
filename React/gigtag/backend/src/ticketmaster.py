@@ -22,7 +22,7 @@ def resolve_new_artists(api: ticketpy.ApiClient):
     
     for artist in artists_to_get:
         found = False
-        for page in api.attractions.find(keyword=artist):
+        for page in api.attractions.find(keyword=artist, size=200):
             if int(page.json['rate']['Rate-Limit-Available']) < 500:
                 print("Cannot continue queries, not enough rate available")
                 return
@@ -46,7 +46,7 @@ def get_artist_events(api: ticketpy.ApiClient, chunk: int=50):
         artist_id_chunk = artist_ids[start_idx: start_idx+chunk]
         attraction_ids = ",".join(artist_id_chunk)
 
-        for page in api.events.find(attraction_id=attraction_ids):
+        for page in api.events.find(attraction_id=attraction_ids, size=200):
             for event in page:
                 for attraction in event.attractions:
                     print(f"Adding event for artist {attraction.name}, event {event.name} at {event.utc_datetime}")
@@ -103,6 +103,7 @@ def _start():
 
         resolve_new_artists(api=api)
         get_artist_events(api=api)
+        database.delete_passed_events()
 
 async def start():
     threading.Thread(target=_start, daemon=True).start()    
