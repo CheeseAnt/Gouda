@@ -7,11 +7,12 @@ import { SpotifyInfo, SpotifyUserInfo } from './components/SpotifyInfo'
 import './App.css';
 import { Artists } from './components/Artists'
 import { TargettedEvents } from './components/TargettedEvents'
-import { Helmet, HelmetProvider } from 'react-helmet-async'
+import { useTelegramAuthResponse } from './components/TelegramAuth'
 
 const App = () => {
   const [token, setToken] = React.useState(Cookies.get("spotifyAuthToken"))
   const [invalidToken, setInvalidToken] = React.useState(false);
+  useTelegramAuthResponse();
 
   const resetInvalid = useCallback(
     (invalid) => {
@@ -25,14 +26,7 @@ const App = () => {
   }, [setInvalidToken]);
   
   return (
-    <HelmetProvider>
     <div className='app'>
-      <Helmet>
-        <meta httpEquiv='Content-Security-Policy' content={`
-          frame-src https://gigtag.duckdns.org https://gigtag.duckdns.org:3000 http://gigtag.duckdns.org http://gigtag.duckdns.org:3000 http://oauth.telegram.org ;
-        `}>
-        </meta>
-      </Helmet>
       {!invalidToken && token ? (
         <div>
           <SpotifyUserInfo setInvalid={resetInvalid}>
@@ -57,7 +51,6 @@ const App = () => {
         </div>
       )}
     </div>
-    </HelmetProvider>
   )
 }
 export default App

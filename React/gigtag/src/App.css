@@ -66,6 +66,13 @@
   font-family: GothamBold;
 }
 
+.centered {
+  display: flex; /* Enable flexbox for the container */
+  justify-content: center; /* Horizontally center elements */
+  align-items: center; /* Vertically center elements */
+  text-align: center;
+}
+
 .centered-container {
   display: flex; /* Enable flexbox for the container */
   justify-content: center; /* Horizontally center elements */
@@ -78,4 +85,15 @@
   background-color: lavender;
   cursor: pointer;
   border-radius: 10px;
+}
+
+.telegram {
+  background-color: #54a9eb;
+  border-radius: 20px;
+  border-color: #54a9eb;
+}
+
+.thumb-photo {
+  width: 64px;
+  height: 64px;
 }

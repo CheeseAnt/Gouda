@@ -1,3 +1,4 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Disallow:
+Content-Security-Policy: "frame-ancestors https://gigtag.duckdns.org https://gigtag.duckdns.org:3000 http://gigtag.duckdns.org http://gigtag.duckdns.org:3000 "http://oauth.telegram.org/" http://127.0.0.1 ;"

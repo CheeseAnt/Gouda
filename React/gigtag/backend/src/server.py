@@ -57,11 +57,15 @@ async def artist_events(request: Request):
 
     return response.JSONResponse([a.as_dict() for a in await asyncio.to_thread(request.ctx.user.get_artist_events, json['artist'])])
 
-@app.post("update_user_countries")
-async def update_user_countries(request: Request):
+@app.post("update_user")
+async def update_user(request: Request):
     json = request.json
     
-    await asyncio.to_thread(request.ctx.user.update_settings, countries=json['countries'])
+    if 'countries' in json:
+        await asyncio.to_thread(request.ctx.user.update_settings, countries=json['countries'])
+    
+    if 'telegramID' in json:
+        await asyncio.to_thread(request.ctx.user.update_settings, telegramID=json['telegramID'])
 
     return response.HTTPResponse()
 
@@ -71,7 +75,7 @@ async def user_events(request: Request):
 
 @app.get("telegram-login")
 async def telegram_login(request: Request):
-    path = 'https://oauth.telegram.org/embed/GigTag_bot?origin=http%3A%2F%2Fgigtag.duckdns.org%3A3000&return_to=http%3A%2F%2Fgigtag.duckdns.org%3A3000%2F%23&size=large&userpic=true&request_access=true&lang=en'
+    path = 'https://oauth.telegram.org/embed/GigTag_bot?origin=http%3A%2F%2F127.0.0.1%3A3000&return_to=http%3A%2F%2F127.0.0.1%3A3000%2F%23&size=large&userpic=true&request_access=write&lang=en'
     import requests
     resp = requests.get(path)
     print(resp, resp.status_code, resp.content)

@@ -24,6 +24,7 @@ def create_db():
                 id varchar(128) PRIMARY KEY,
                 email varchar(256),
                 countries text,
+                telegramID text,
                 last_updated_playlists datetime,
                 last_updated_artists datetime
             );""")
@@ -351,7 +352,7 @@ def get_user_country_specific_enabled_events(user_id: str):
 if __name__ == '__main__':
     # print(get_unique_enabled_artist_ids())
     with Connection() as con:
-        cur = con.execute("ALTER TABLE USER ADD COLUMN countries text")
+        cur = con.execute("ALTER TABLE USER ADD COLUMN telegramID text")
         con.commit()
         
         # cur = con.execute("SELECT * FROM ARTIST", {'start': datetime.utcnow()})
