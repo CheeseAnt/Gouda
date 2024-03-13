@@ -14,12 +14,16 @@ class Connection:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connection.close()
 
+class Duplicate(Exception):
+    pass
+
 def create_db():
     with Connection() as con:
         cur = con.execute("""
             CREATE TABLE USER (
                 id varchar(128) PRIMARY KEY,
                 email varchar(256),
+                countries text,
                 last_updated_playlists datetime,
                 last_updated_artists datetime
             );""")
@@ -66,6 +70,7 @@ def create_db():
                 artist_id varchar(256),
                 event_id varchar(256),
                 event_details TEXT,
+                start datetime,
                 onsale datetime,
                 presale datetime,
                 venue varchar(256),
@@ -210,17 +215,6 @@ def delete_artist(user_id: str, name: str):
         con.commit()
         cur.fetchall()
 
-def insert_event():
-    # artist_id varchar(256),
-    #             event_id varchar(256),
-    #             event_details TEXT,
-    #             onsale datetime,
-    #             presale datetime,
-    #             venue varchar(256),
-    #             country varchar(64),
-    #             PRIMARY KEY (artist_id, event_id)
-    pass
-
 def get_events(artist_id: str) -> list[dict]:
     """Fetches all events for a given artist from the database.
 
@@ -252,7 +246,7 @@ def get_events(artist_id: str) -> list[dict]:
 
         return events
 
-def insert_event(artist_id: str, event_id: str, event_details: dict,
+def insert_event(artist_id: str, event_id: str, event_details: dict, start: datetime,
                  onsale: datetime, presale: datetime, venue: str, country: str) -> None:
     """Inserts a new event into the database.
 
@@ -274,20 +268,47 @@ def insert_event(artist_id: str, event_id: str, event_details: dict,
         cur = con.cursor()
         try:
             cur.execute("""
-            INSERT INTO EVENT (artist_id, event_id, event_details, onsale, presale, venue, country)
-            VALUES (:artist_id, :event_id, :event_details, :onsale, :presale, :venue, :country)
+            INSERT INTO EVENT (artist_id, event_id, event_details, start, onsale, presale, venue, country)
+            VALUES (:artist_id, :event_id, :event_details, :start, :onsale, :presale, :venue, :country)
             """, {'artist_id': artist_id, 'event_id': event_id, 'event_details': event_details,
-                'onsale': onsale, 'presale': presale, 'venue': venue, 'country': country})
+                'start': start, 'onsale': onsale, 'presale': presale, 'venue': venue, 'country': country})
             con.commit()
         except Exception as e:
-            raise Exception(f"Error inserting event for artist {artist_id}: {e}") from e
+            raise Duplicate(f"Error inserting event for artist {artist_id}: {e}") from e
 
+def update_event(artist_id: str, event_id: str, **kwargs: dict):
+    with Connection() as con:
+        keys = list(kwargs.keys())
+
+        if "event_details" in kwargs:
+            kwargs['event_details'] = json.dumps(kwargs['event_details'])
+
+        cur = con.execute(f"""
+    UPDATE EVENT SET
+    {",".join(key + '=:' + key for key in keys)}
+    WHERE artist_id=:artist_id AND event_id=:event_id 
+                    """, {'artist_id': artist_id, 'event_id': event_id, **kwargs})
+
+        con.commit()
+
+def get_artist_events(artist: str):
+    with Connection() as con:
+        cur = con.execute(f"""SELECT DISTINCT id FROM ARTIST_ID WHERE name=:name""", {'name': artist})
+        ids = [a['id'] for a in cur.fetchall()]
+
+    events = list()
+    for artist_id in ids:
+        events.extend(get_events(artist_id=artist_id))
+
+    return events
 
 if __name__ == '__main__':
     # print(get_unique_enabled_artist_ids())
-    # with Connection() as con:
-    #     cur = con.execute("ALTER TABLE ARTIST ADD COLUMN tracks INTEGER")
-    #     con.commit()
-    #     cur.fetchall()
+    with Connection() as con:
+        # cur = con.execute("ALTER TABLE USER ADD COLUMN countries text")
+        # con.commit()
+        
+        # cur = con.execute("SELECT * FROM ARTIST", {'start': datetime.utcnow()})
+        print(cur.fetchall()[0][:])
 
     # create_db()

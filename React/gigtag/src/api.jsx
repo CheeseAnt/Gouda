@@ -42,8 +42,12 @@ async function getuserArtists() {
     return await makeRequest("user_artists")
 }
 
+async function getArtistEvents(artist) {
+    return await makeRequest("artist_events", {artist: artist})
+}
+
 async function refreshUserArtists() {
     return await makeRequest("user_artists?fresh=1")
 }
 
-export { getUserInfo, getUserPlaylists, refreshUserPlaylists, togglePlaylist, getuserArtists, refreshUserArtists, toggleArtist }
+export { getUserInfo, getUserPlaylists, refreshUserPlaylists, togglePlaylist, getuserArtists, refreshUserArtists, toggleArtist, getArtistEvents }

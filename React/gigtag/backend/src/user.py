@@ -1,3 +1,4 @@
+from __future__ import annotations
 from . import database
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
@@ -23,12 +24,28 @@ class Playlist():
         return sd
 
 @dataclass
+class Event():
+    artist_id: str
+    event_id: str
+    event_details: dict
+    start: datetime
+    onsale: datetime
+    presale: datetime
+    venue: str
+    country: str
+
+    def as_dict(self):
+        sd = asdict(self)
+        return sd
+
+@dataclass
 class Artist():
     user_id: int
     name: str
+    tracks: int
     last_updated: datetime
     enabled: bool
-    
+
     def as_dict(self):
         sd = asdict(self)
         return sd
@@ -149,7 +166,7 @@ class User():
                 self.counts[artist] = self.counts.get(artist, 0) + 1
             
             def update(self, other: ArtistCounter):
-                for artist, count in other.counts:
+                for artist, count in other.counts.items():
                     self.counts[artist] = self.counts.get(artist, 0) + count
             
             def set(self):
@@ -184,7 +201,7 @@ class User():
                         artists.add(artist['name'])
                 except:
                     pass
-                        
+            
             return artists
 
         artists = ArtistCounter()
@@ -205,8 +222,8 @@ class User():
         for artist, tracks in artists.subset(to_add).items():
             database.insert_artist(user_id=self.id, name=artist, tracks=tracks, enabled=True)
 
-        for artist, tracks in artists.subset(to_add).items():
-            database.update_artist(user_id=self.id, name=artist, tracks=tracks)
+        for artist, tracks in artists.subset(to_update).items():
+            database.update_artist(user_id=self.id, name=artist, kwargs={'tracks':tracks})
 
         for artist in to_delete:
             database.delete_artist(user_id=self.id, name=artist)
@@ -216,3 +233,6 @@ class User():
         artists = database.get_artists(user_id=self.id)
 
         return artists
+
+    def get_artist_events(self, artist: str) -> list[Event]:
+        return [Event(**row) for row in database.get_artist_events(artist=artist)]

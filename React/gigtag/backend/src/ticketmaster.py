@@ -13,27 +13,6 @@ def same_artist(artist_one: str, artist_two: str) -> bool:
 def format_time(t: datetime):
     return t.strftime('%Y-%m-%dT%H:%M:%SZ')
 
-def make_rated_request(func, rate: int = 5, period: int=1, **kwargs) -> list:
-    start = time.time()
-    interval = (period)/rate
-
-    results = list()
-    for page in func(**kwargs):
-        print("going", time.time(), page)
-
-        if (time.time()-start) < interval:
-            time.sleep(start+interval-time.time())
-
-        start = time.time()
-
-        for obj in page:
-            results.append(obj)
-        
-        if len(results) == 1000:
-            break
-
-    return results
-
 def resolve_new_artists(api: ticketpy.ApiClient):
     """
     Get all the artists that are new in the DB that have not been found in TM yet
@@ -41,11 +20,10 @@ def resolve_new_artists(api: ticketpy.ApiClient):
     artists_to_get = database.get_unique_enabled_artist_no_id()
     print(f"Resolving {len(artists_to_get)} artists")
     
-    return
     for artist in artists_to_get:
         found = False
         for page in api.attractions.find(keyword=artist):
-            if int(page.json['rate']['Rate-Limit-Available']) < 100:
+            if int(page.json['rate']['Rate-Limit-Available']) < 500:
                 print("Cannot continue queries, not enough rate available")
                 return
             
@@ -62,7 +40,7 @@ def resolve_new_artists(api: ticketpy.ApiClient):
 def get_artist_events(api: ticketpy.ApiClient, chunk: int=50):
     artists = {a['id']: a['name'] for a in database.get_unique_enabled_artist_ids()}
     
-    artist_ids = list(artist_ids.keys())
+    artist_ids = list(artists.keys())
     
     for start_idx in range(0, len(artist_ids), chunk):
         artist_id_chunk = artist_ids[start_idx: start_idx+chunk]
@@ -70,31 +48,61 @@ def get_artist_events(api: ticketpy.ApiClient, chunk: int=50):
 
         for page in api.events.find(attraction_id=attraction_ids):
             for event in page:
-                print(event)
-                print(dir(event))
-                return
-                database.insert_event(
-                    artist_id=event
-                )
+                for attraction in event.attractions:
+                    print(f"Adding event for artist {attraction.name}, event {event.name} at {event.utc_datetime}")
+                    try:
+                        database.insert_event(
+                            artist_id=attraction.id,
+                            event_id=event.id,
+                            event_details=event.json,
+                            start=event.utc_datetime,
+                            onsale=event.sales.public.start,
+                            presale=",".join(p.start for p in event.sales.presales),
+                            venue=f"{event.venues[0].city}: {event.venues[0].name}",
+                            country=event.venues[0].json['country']['countryCode']
+                        )
+                    except database.Duplicate:
+                        database.update_event(
+                            artist_id=attraction.id,
+                            event_id=event.id,
+                            event_details=event.json,
+                            start=event.utc_datetime,
+                            onsale=event.sales.public.start,
+                            presale=",".join(p.start for p in event.sales.presales),
+                            venue=f"{event.venues[0].city}: {event.venues[0].name}",
+                            country=event.venues[0].json['country']['countryCode']
+                        )
+                    except Exception as ex:
+                        print(f"Failed to add event for artist {attraction.name}, event {event.name}: {ex}")
+
+def sleep_until(target_time: str):
+    # Get current time
+    current_time = datetime.now()
+    
+    hour, minute = target_time.split(":")
+    hour = int(hour)
+    minute = int(minute)
+    target_datetime = current_time.replace(hour=hour, minute=minute, second=0)
+
+    # Calculate time difference (considering date change if necessary)
+    time_diff = target_datetime - current_time
+    if time_diff.days < 0:  # Target time is next day
+      time_diff += timedelta(days=1)
+
+    # Convert time difference to seconds and sleep
+    sleep_duration = time_diff.total_seconds()
+    print(f"Sleeping for {sleep_duration:.2f} seconds to reach {target_time}.")
+    time.sleep(sleep_duration)
 
 def _start():
     # return
     api = ticketpy.ApiClient(api_key=settings.TICKETMASTER_API_KEY)
     
-    # resolve_new_artists(api=api)
+    while True:
+        sleep_until("07:00")
 
-    get_artist_events(api=api)
-    
-    return
-    for event in make_rated_request(
-                api.events.find,
-                country_code="IE",
-                onsale_start_date_time=format_time(datetime.utcnow()),
-                # onsale_end_date_time=format_time((datetime.utcnow()+timedelta(hours=1))),
-                start_date_time=format_time(datetime.utcnow()+timedelta(days=90)),
-                size=200
-            ):
-        print(event.name)
+        resolve_new_artists(api=api)
+        get_artist_events(api=api)
 
 async def start():
     threading.Thread(target=_start, daemon=True).start()    

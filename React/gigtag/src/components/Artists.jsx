@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getuserArtists, refreshUserArtists } from "../api";
 import { Loader } from "./Loader";
 import { toggleArtist } from "../api";
+import ArtistEvents from "./ArtistEvents";
 
 const useArtists = () => {
     const [artists, setArtists] = useState([]);
@@ -66,19 +67,46 @@ const useArtists = () => {
 
 const Artists = () => {
     const { artists, loading, refreshArtists, toggleAr } = useArtists();
+    const [ sortedArtists, setSortedArtists ] = useState([]);
+    const [ sortType, setSortType ] = useState('byTracks');
+
+    useEffect(() => {
+        const sorts = {
+            byName: (artists) => { return Object.values(artists) },
+            byTracks: (artists) => { return Object.values(artists).sort((a, b) => b.tracks-a.tracks) }
+        };
+
+        setSortedArtists(sorts[sortType](artists));
+    }, [artists, sortType])
+
+    const [show, setShow] = useState(false);
+    const [artist, setArtist] = useState({});
+
+    const displayArtistEvents = useCallback((artist) => {
+        setArtist(artist);
+        setShow(true);
+    }, [setArtist, setShow]);
 
     return <div>
+        <ArtistEvents artist={artist} show={show} setShow={setShow} />
         {
             loading ? <Loader /> :
             <div className='container'>
                 <button className='btn btn-info px-10 w-100' onClick={refreshArtists}>Refresh from Spotify</button>
+                <div className="d-flex">
+                    <button className='btn btn-secondary m-1 w-50' onClick={() => setSortType('byName')}>Sort By Name</button>
+                    <button className='btn btn-secondary m-1 w-50' onClick={() => setSortType('byTracks')}>Sort By Favourite</button>
+                </div>
                 <h4 className="text-muted">Total Artists: {Object.keys(artists).length}</h4>
-                {Object.values(artists).map(artist => {
-                    return <div key={artist.name} className='artist d-flex'>
+                {sortedArtists.map(artist => {
+                    return <div key={artist.name} onClick={() => displayArtistEvents(artist)} className='artist d-flex'>
                         <div className='d-flex w-100' style={{justifyContent: 'space-between'}}>
                             <div>
                                 <h1 className='fw-bold mx-3'>{artist.name}</h1>
-                                <h3 className='mx-3 text-muted'>{artist.last_updated}</h3>
+                                <div className="d-flex">
+                                    <h3 className="mx-3 text-muted">Tracks: {artist.tracks}</h3>
+                                    <h3 className='mx-3 text-muted'>{artist.last_updated}</h3>
+                                </div>
                             </div>
                             <button className='btn btn-info m-3 px-4' style={{fontSize: 'xxx-large'}} data-mdb-toggle="button" onClick={() => toggleAr(artist)}>
                                 {artist.enabled ? '☑' : '☐'}

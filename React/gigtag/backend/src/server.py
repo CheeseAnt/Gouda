@@ -44,6 +44,12 @@ async def toggle_artist(request: Request):
 async def get_artists(request: Request):
     return response.JSONResponse({a.name: a.as_dict() for a in await asyncio.to_thread(request.ctx.user.get_enabled_artists, "fresh" in request.args)})
 
+@app.post("artist_events")
+async def artist_events(request: Request):
+    json = request.json
+
+    return response.JSONResponse([a.as_dict() for a in await asyncio.to_thread(request.ctx.user.get_artist_events, json['artist'])])
+
 @app.after_server_start
 async def start_ticketmaster_api(app, loop):
     await ticketmaster.start()

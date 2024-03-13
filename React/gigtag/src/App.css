@@ -74,3 +74,8 @@
   height: 100vh;
 }
 
+.artist:hover {
+  background-color: lavender;
+  cursor: pointer;
+  border-radius: 10px;
+}
