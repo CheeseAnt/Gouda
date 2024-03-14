@@ -87,6 +87,11 @@
   border-radius: 10px;
 }
 
+.event:hover {
+  background-color: lavender;
+  cursor: pointer;
+}
+
 .telegram {
   background-color: #54a9eb;
   border-radius: 20px;

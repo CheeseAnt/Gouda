@@ -33,7 +33,7 @@ const TelegramAuth = ({jwtInput}) => {
 
         const jwtInfo = jwtDecode(hash, { header: true });
         setDecodedJwt(jwtInfo);
-    }, [setDecodedJwt]);
+    }, [setDecodedJwt, decodedJwt, jwtInput]);
 
     const logOut = () => {
         Cookies.set(TELEGRAM_HASH_COOKIE, '');
@@ -45,14 +45,14 @@ const TelegramAuth = ({jwtInput}) => {
         {
             Object.keys(decodedJwt).length ?
             <div className="d-flex" style={{alignItems: 'center'}}>
-                <img className="me-3 rounded-circle thumb-photo" src={decodedJwt.photo_url}/>
+                <img className="me-3 rounded-circle thumb-photo" alt="telegram profile" src={decodedJwt.photo_url}/>
                 <div className="d-grid">
                     <div>
                         <span className="text-muted">Logged in as: </span>
                         <span>{decodedJwt.first_name} ({decodedJwt.username})</span>
                     </div>
                     <span className="text-muted">{decodedJwt.id}</span>
-                    <Button className='telegram btn m-2' onClick={logOut}><Telegram /> Log Out</Button>
+                    <Button className='telegram btn m-2' onClick={logOut}>Log Out <Telegram /></Button>
                 </div>
             </div>
             :

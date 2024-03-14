@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getUserCountryEnabledEvents } from "../api";
 import { Loader } from "./Loader";
+import Event from "./Event";
 
 const useEvents = () => {
     const [events, setEvents] = useState([]);
@@ -21,7 +22,11 @@ const useEvents = () => {
             return;
         }
 
-        setEvents(await res.json());
+        const json = await res.json();
+        json.forEach((event) => {
+            event['event_details'] = JSON.parse(event['event_details']);
+        })
+        setEvents(json);
         setLoading(false);
         setDone(true);
     }, [loading, setEvents, setLoading, setDone]);
@@ -48,12 +53,11 @@ const TargettedEvents = () => {
                 <div className="d-flex">
                 </div>
                 <h4 className="text-muted">Total Events: {events.length}</h4>
-                {events.map(event => {
-                    return <div key={event.event_id + event.attraction_id} className='event d-flex'>
-                        {event.id}
-                        {event.onsale}
-                    </div>
-                })}
+                <div className="container">
+                    {events.map((event, idx) => {
+                        return <Event key={idx} eventData={event} />
+                    })}
+                </div>
             </div>
         }
     </div>
