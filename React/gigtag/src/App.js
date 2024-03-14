@@ -8,6 +8,7 @@ import './App.css';
 import { Artists } from './components/Artists'
 import { TargettedEvents } from './components/TargettedEvents'
 import { useTelegramAuthResponse } from './components/TelegramAuth'
+import BugReportButton from './components/BugReport'
 
 const App = () => {
   const [token, setToken] = React.useState(Cookies.get("spotifyAuthToken"))
@@ -30,9 +31,9 @@ const App = () => {
       {!invalidToken && token ? (
         <div>
           <SpotifyUserInfo setInvalid={resetInvalid}>
-            <SpotifyInfo name='Playlists' />
-            <Artists name='Artists' />
             <TargettedEvents name='Events' />
+            <Artists name='Artists' />
+            <SpotifyInfo name='Playlists' />
           </SpotifyUserInfo>
         </div>
       ) : (
@@ -50,6 +51,7 @@ const App = () => {
           </div>
         </div>
       )}
+      <BugReportButton />
     </div>
   )
 }

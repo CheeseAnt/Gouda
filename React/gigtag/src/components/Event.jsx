@@ -4,6 +4,9 @@ import { Container } from 'react-bootstrap';
 
 const Event = ({ eventData }) => {
     const {
+        event_id,
+        artists,
+        country,
         event_details: {
         name,
         images,
@@ -43,9 +46,9 @@ const Event = ({ eventData }) => {
 
     const parseSale = (sale) => {
         const name = sale.name ?? 'Public';
-        const date = new Date(sale.startDateTime);
-        const start = date.toLocaleString('en-UK') ?? 'TBA';
-        const started = date < (new Date());
+        const date = sale.startDateTime ? new Date(sale.startDateTime) : 'Now';
+        const start = date instanceof Date ? date.toLocaleString('en-UK') : date;
+        const started = date instanceof Date ? (date < (new Date())) : true;
 
         return {name, start, date, started}
     }
@@ -74,7 +77,13 @@ const Event = ({ eventData }) => {
                         </Typography>
                         <Chip label={genre} color="primary" variant="contained" sx={{ mx: 1 }} />
                     </div>
-                    </Grid>
+                </Grid>
+                <Grid item xs={12}>
+                    <Typography variant="body2" color="text.secondary">
+                        Your artists:
+                    </Typography>
+                    <Typography variant="body1">{artists}</Typography>
+                </Grid>
                     <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">
                         Date:
@@ -85,13 +94,19 @@ const Event = ({ eventData }) => {
                     <Typography variant="body2" color="text.secondary">
                         Venue:
                     </Typography>
-                    <Typography variant="body1">{venue.name}</Typography>
+                    <Typography variant="body1">{venue.name}, {country}</Typography>
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">
                         Price:
                     </Typography>
                     <Typography variant="body1">{priceDisplay}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                    <Typography variant="body2" color="text.secondary">
+                        ID:
+                    </Typography>
+                    <Typography variant="body1">{event_id}</Typography>
                     </Grid>
                     <Grid item xs={12}>
                     <Typography variant="body2" color="text.secondary">

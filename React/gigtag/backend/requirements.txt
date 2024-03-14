@@ -4,3 +4,4 @@ spotipy
 ticketpy
 uvicorn
 python-dotenv
+PyJWT

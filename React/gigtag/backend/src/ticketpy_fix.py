@@ -153,6 +153,8 @@ class Event:
     def utc_datetime(self, utc_datetime):
         if not utc_datetime:
             self.__utc_datetime = None
+        if isinstance(utc_datetime, datetime):
+            return
         else:
             ts_format = "%Y-%m-%dT%H:%M:%SZ"
             self.__utc_datetime = datetime.strptime(utc_datetime, ts_format)
@@ -169,7 +171,7 @@ class Event:
         start_dates = dates.get('start', {})
         e.local_start_date = start_dates.get('localDate')
         e.local_start_time = start_dates.get('localTime')
-        e.utc_datetime = start_dates.get('dateTime')
+        e.utc_datetime = start_dates.get('dateTime') or datetime.fromisoformat(e.local_start_date)
 
         status = dates.get('status', {})
         e.status = status.get('code')

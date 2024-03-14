@@ -102,3 +102,21 @@
   width: 64px;
   height: 64px;
 }
+
+.wide-modal {
+  max-width: 75%;
+}
+
+.report-bug-btn {
+  transform: rotate(-90deg) translateY(-50%);
+  position: fixed!important;
+  top: 50%;
+  right: -60px;
+  padding: 10px 20px;
+  border: 1px dashed!important;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 999; /* Ensure button appears on top of other elements */
+}

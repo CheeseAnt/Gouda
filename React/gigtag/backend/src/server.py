@@ -2,7 +2,7 @@ import asyncio
 from sanic import Sanic, Request, response
 from sanic.response import text
 from sanic_cors import CORS
-from . import middleware, ticketmaster
+from . import middleware, ticketmaster, telegram
 
 app = Sanic("gigtag-be")
 
@@ -61,11 +61,22 @@ async def artist_events(request: Request):
 async def update_user(request: Request):
     json = request.json
     
-    if 'countries' in json:
-        await asyncio.to_thread(request.ctx.user.update_settings, countries=json['countries'])
+    if 'id' in json:
+        json.pop('id')
+
+    if 'email' in json:
+        json.pop('email')
+
+
+    await asyncio.to_thread(request.ctx.user.update_settings, **json)
+
+    return response.HTTPResponse()
+
+@app.post("bug_report")
+async def bug_report(request: Request):
+    json = request.json
     
-    if 'telegramID' in json:
-        await asyncio.to_thread(request.ctx.user.update_settings, telegramID=json['telegramID'])
+    await asyncio.to_thread(telegram.send_bug_report, text=json['text'])
 
     return response.HTTPResponse()
 
@@ -85,3 +96,5 @@ async def telegram_login(request: Request):
 async def start_ticketmaster_api(app, loop):
     await ticketmaster.start()
     print("Started Ticketmaster Thread")
+
+#https://app.ticketmaster.com/inventory-status/v1/availability?events=G5dOZ9fIr3s33,G5dbZ9UnUUS4j,G5dbZ9Vp_3o0W,G5vOZ9MRQs1jB&apikey=

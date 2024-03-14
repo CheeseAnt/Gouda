@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Modal from 'react-bootstrap/Modal';
-import { getUserSettings, updateUserCountries } from '../api';
+import { getUserSettings, updateUserCountries, updateUserNotification } from '../api';
 import { Loader } from './Loader';
 import { Form, InputGroup } from 'react-bootstrap';
 import ReactSelect from 'react-select';
@@ -72,6 +72,29 @@ const UserSettings = ({user, setShow, show}) => {
         await updateUserCountries(options.map(option => option.value).join(","))
     }
 
+    const clearTelegramInfo = useCallback(() => {
+        setSettings(settings => {
+            settings = {
+                ...settings,
+                telegramID: "",
+            }
+            return settings;
+        });
+    }, [setSettings]);
+
+    const toggleUserNotify = useCallback((e) => {
+        updateUserNotification(!settings.notify_for_gigs);
+
+        setSettings(settings => {
+            settings = {
+                ...settings,
+                notify_for_gigs: !settings.notify_for_gigs
+            };
+
+            return settings;
+        });
+    }, [setSettings, settings])
+
     return (    
         <Modal show={show} fullscreen={'xl-down'} onHide={close}>
             <Modal.Header closeButton>
@@ -101,6 +124,16 @@ const UserSettings = ({user, setShow, show}) => {
                             />
                         </InputGroup>
                         <InputGroup className='my-1'>
+                            <InputGroup.Text id="basic-addon2">Notify for New Gigs</InputGroup.Text>
+                            <Form.Switch
+                                style={{alignSelf: 'center', scale: "1.5", marginLeft: '15px'}}
+                                aria-label="notify_new_gigs"
+                                aria-describedby="basic-addon2"
+                                defaultChecked={settings.notify_for_gigs}
+                                onChange={toggleUserNotify}
+                            />
+                        </InputGroup>
+                        <InputGroup className='my-1'>
                             <InputGroup.Text className='w-100' style={{justifyContent: 'center'}} id="basic-addon3">Countries of Interest</InputGroup.Text>
                             <ReactSelect
                                 className='w-100 m-1'
@@ -119,7 +152,7 @@ const UserSettings = ({user, setShow, show}) => {
                                 }
                             />
                         </InputGroup>
-                        <TelegramAuth jwtInput={settings.telegramID} />
+                        <TelegramAuth jwtInput={settings.telegramID} onClear={clearTelegramInfo} />
                     </div>
                 }
             </Modal.Body>

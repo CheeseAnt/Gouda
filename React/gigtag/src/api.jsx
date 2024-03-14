@@ -54,17 +54,24 @@ async function updateUserCountries(countries) {
     return await makeRequest("update_user", {countries: countries})
 }
 
+async function updateUserNotification(notify) {
+    return await makeRequest("update_user", {notify_for_gigs: notify})
+}
+
 async function updateUserTelegramID(id) {
     return await makeRequest("update_user", {telegramID: id})
+}
+
+async function submitBugReport(text) {
+    return await makeRequest("bug_report", {text: text})
 }
 
 async function getUserCountryEnabledEvents() {
     return await makeRequest("user_events")
 }
 
-
 async function refreshUserArtists() {
     return await makeRequest("user_artists?fresh=1")
 }
 
-export { getUserInfo, getUserPlaylists, refreshUserPlaylists, togglePlaylist, getuserArtists, refreshUserArtists, toggleArtist, getArtistEvents, getUserSettings, updateUserCountries, getUserCountryEnabledEvents, updateUserTelegramID }
+export { getUserInfo, getUserPlaylists, refreshUserPlaylists, togglePlaylist, getuserArtists, refreshUserArtists, toggleArtist, getArtistEvents, getUserSettings, updateUserCountries, getUserCountryEnabledEvents, updateUserTelegramID, submitBugReport, updateUserNotification }

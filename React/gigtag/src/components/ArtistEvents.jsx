@@ -3,6 +3,7 @@ import Modal from 'react-bootstrap/Modal';
 import { getArtistEvents } from '../api';
 import { Loader } from './Loader';
 import { Button } from 'react-bootstrap';
+import Event from './Event';
 
 const ArtistEvents = ({artist, show, setShow}) => {
     const [loading, setLoading] = useState(false);
@@ -51,17 +52,8 @@ const ArtistEvents = ({artist, show, setShow}) => {
                     <Button className='btn btn-secondary w-100' onClick={() => getEvents(true)}>Refresh</Button>
                     {
                         done && events.length === 0 ? <h2>No Events Found</h2> : 
-                        events.map((event) => {
-                            return <div key={event.event_id}>
-                                <h5>
-                                    {event.name}
-                                    {event.venue}
-                                    {event.country}
-                                    {event.start}
-                                    {event.onsale}
-                                    {event.presale}
-                                </h5>
-                            </div>
+                        events.map((event, idx) => {
+                            return <Event key={idx} eventData={event} />
                         })
                     }
                 </div>

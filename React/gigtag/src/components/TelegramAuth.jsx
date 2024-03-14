@@ -10,7 +10,7 @@ const REDIRECT_URL = process.env.REACT_APP_REDIRECT_URI ?? "http://127.0.0.1:300
 const AUTH_URL = `https://oauth.telegram.org/auth?bot_id=${BOT_ID}&origin=${REDIRECT_URL}&embed=1&request_access=write&lang=en&return_to=${REDIRECT_URL}`
 const TELEGRAM_HASH_COOKIE = 'telelgramHash';
 
-const TelegramAuth = ({jwtInput}) => {
+const TelegramAuth = ({jwtInput, onClear}) => {
     const [decodedJwt, setDecodedJwt] = useState({});
     
     useEffect(() => {
@@ -39,6 +39,7 @@ const TelegramAuth = ({jwtInput}) => {
         Cookies.set(TELEGRAM_HASH_COOKIE, '');
         setDecodedJwt({});
         updateUserTelegramID('');
+        onClear();
     }
 
     return <div className="w-100 text-center">

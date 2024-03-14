@@ -33,6 +33,7 @@ class Event():
     presale: datetime
     venue: str
     country: str
+    artists: str
 
     def as_dict(self):
         sd = asdict(self)

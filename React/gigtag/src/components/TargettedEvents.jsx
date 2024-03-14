@@ -8,6 +8,9 @@ const useEvents = () => {
     const [loading, setLoading] = useState(false);
     const [done, setDone] = useState(false);
 
+    // TODO: Make filter for artist, venue, date, price
+    // const artists = new Set(events.map(event => event.artists.split(",")).flat())
+
     const getEvents = useCallback(async () => {
         if(loading) {
             return;
@@ -25,7 +28,10 @@ const useEvents = () => {
         const json = await res.json();
         json.forEach((event) => {
             event['event_details'] = JSON.parse(event['event_details']);
+            event['start_date'] = new Date(event['start']);
         })
+        // json.sort((a, b) => a['start_date'] < b['start_date'] ? -1 : (a['start_date'] > b['start_date'] ? 1 : 0))
+
         setEvents(json);
         setLoading(false);
         setDone(true);

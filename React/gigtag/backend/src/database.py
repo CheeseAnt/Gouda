@@ -25,6 +25,7 @@ def create_db():
                 email varchar(256),
                 countries text,
                 telegramID text,
+                notify_for_gigs bool,
                 last_updated_playlists datetime,
                 last_updated_artists datetime
             );""")
@@ -79,6 +80,35 @@ def create_db():
                 PRIMARY KEY (artist_id, event_id)
             );
         """)
+        
+        cur = con.execute("""
+            CREATE TABLE USER_EVENT_ENABLE (
+                user_id varchar(256),
+                event_id varchar(256),
+                events text,
+                PRIMARY KEY (user_id, event_id)
+            );
+        """)
+        
+        cur = con.execute("""
+            CREATE TABLE USER_NOTIFICATIONS (
+                user_id varchar(256),
+                hash varchar(32),
+                date datetime,
+                PRIMARY KEY (user_id, hash)
+            );
+        """)
+        
+        cur = con.execute("""
+            CREATE TABLE EVENT_STATUS (
+                event_id varchar(256) PRIMARY KEY,
+                sale bool,
+                resale bool,
+                saledate datetime,
+                resaledate datetime
+            );
+        """)
+
 
         con.commit()
 
@@ -255,7 +285,12 @@ def get_events(artist_id: str) -> list[dict]:
         cur = con.cursor()
         try:
             cur.execute("""
-            SELECT * FROM EVENT WHERE artist_id = :artist_id
+            SELECT e.*,
+                GROUP_CONCAT(ai.name, ', ') AS artists
+            FROM EVENT e
+            JOIN ARTIST_ID ai ON e.artist_id = ai.id AND e.artist_id = :artist_id
+            GROUP BY e.event_id, ai.name
+            ORDER BY e.start
             """, {'artist_id': artist_id})
             events = cur.fetchall()
         except Exception as e:
@@ -341,10 +376,14 @@ def get_user_country_specific_enabled_events(user_id: str):
 
     with Connection() as con:
         cur = con.execute(f"""
-        SELECT e.* FROM EVENT e
-        JOIN ARTIST_ID ai ON e.artist_id=ai.id
-        JOIN ARTIST a on a.name=ai.name
-        WHERE a.enabled and {country_clause}
+        SELECT e.*,
+            GROUP_CONCAT(a.name, ', ') AS artists
+        FROM EVENT e
+        JOIN ARTIST_ID ai ON e.artist_id = ai.id
+        JOIN ARTIST a ON a.name = ai.name
+        WHERE a.enabled AND {country_clause}
+        GROUP BY e.event_id, ai.name
+        ORDER BY e.start
         """, countries)
         
         return [dict(**row) for row in cur.fetchall()]
@@ -352,10 +391,11 @@ def get_user_country_specific_enabled_events(user_id: str):
 if __name__ == '__main__':
     # print(get_unique_enabled_artist_ids())
     with Connection() as con:
-        cur = con.execute("ALTER TABLE USER ADD COLUMN telegramID text")
+        # cur = con.execute("ALTER TABLE USER ?ADD COLUMN notify_for_gigs bool")
+        
         con.commit()
         
-        # cur = con.execute("SELECT * FROM ARTIST", {'start': datetime.utcnow()})
+        # cur = con.execute("SELECT COUNT(*) FROM EVENT", {'start': datetime.utcnow()})
         print(cur.fetchall()[0][:])
-
+i
     # create_db()

@@ -109,7 +109,7 @@ const Artists = () => {
                                     <h3 className='mx-3 text-muted'>{artist.last_updated}</h3>
                                 </div>
                             </div>
-                            <button className='btn btn-info m-3 px-4' style={{fontSize: 'xxx-large'}} data-mdb-toggle="button" onClick={() => toggleAr(artist)}>
+                            <button className='btn btn-info m-3 px-4' style={{fontSize: 'xxx-large'}} data-mdb-toggle="button" onClick={(e) => {toggleAr(artist); e.stopPropagation()}}>
                                 {artist.enabled ? '☑' : '☐'}
                             </button>
                         </div>
