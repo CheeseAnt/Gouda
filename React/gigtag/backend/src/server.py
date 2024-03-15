@@ -80,6 +80,17 @@ async def bug_report(request: Request):
 
     return response.HTTPResponse()
 
+@app.post("event_notification")
+async def event_notification(request: Request):
+    json = request.json
+    
+    if "user_id" in json:
+        json.pop("user_id")
+
+    await asyncio.to_thread(request.ctx.user.set_event_notification, **json)
+
+    return response.HTTPResponse()
+
 @app.get("user_events")
 async def user_events(request: Request):
     return response.JSONResponse(await asyncio.to_thread(request.ctx.user.get_country_enabled_events))

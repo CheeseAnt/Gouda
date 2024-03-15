@@ -1,6 +1,7 @@
-import React from 'react';
-import { Box, Card, CardContent, CardMedia, Divider, Typography, Grid, Chip } from '@mui/material';
+import React, { useState } from 'react';
+import { Button, Box, Card, CardContent, CardMedia, Divider, Typography, Grid, Chip } from '@mui/material';
 import { Container } from 'react-bootstrap';
+import { updateEventNotification } from '../api';
 
 const Event = ({ eventData }) => {
     const {
@@ -18,6 +19,9 @@ const Event = ({ eventData }) => {
         _embedded: { venues: [venue] },
         },
     } = eventData;
+
+    const [saleN, setSaleN] = useState(eventData.sale_n);
+    const [reSaleN, setReSaleN] = useState(eventData.resale_n);
 
     const formattedDate = new Date(start.dateTime).toLocaleDateString('en-US', {
         weekday: 'long',
@@ -58,11 +62,25 @@ const Event = ({ eventData }) => {
         ...(sales['presales'] ? sales['presales'].map((sale) => parseSale(sale)) : [])
     ];
 
+    const toggleSaleNotification = (type) => {
+        if(type === 'sale') {
+            setSaleN(!saleN);
+            updateEventNotification(event_id, {"sale": !saleN});
+        }
+        
+        if(type === 'resale') {
+            setReSaleN(!reSaleN);
+            updateEventNotification(event_id, {"resale": !reSaleN});
+        }
+    }
+
     return (
         <a href={url} target='_blank' rel='noreferrer' style={{all: 'unset'}}>
         <Container className='my-2'>
         <Card className='event' sx={{ maxWidth: 600, margin: 'auto' }}>
             <CardMedia
+            href={url}
+            target='_blank'
             component="img"
             height="240"
             image={getBestImage(images)}
@@ -84,31 +102,46 @@ const Event = ({ eventData }) => {
                     </Typography>
                     <Typography variant="body1">{artists}</Typography>
                 </Grid>
-                    <Grid item xs={6}>
+                <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">
                         Date:
                     </Typography>
                     <Typography variant="body1">{formattedDate}</Typography>
-                    </Grid>
-                    <Grid item xs={6}>
+                </Grid>
+                <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">
                         Venue:
                     </Typography>
                     <Typography variant="body1">{venue.name}, {country}</Typography>
-                    </Grid>
-                    <Grid item xs={6}>
+                </Grid>
+                <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">
                         Price:
                     </Typography>
                     <Typography variant="body1">{priceDisplay}</Typography>
-                    </Grid>
-                    <Grid item xs={6}>
+                </Grid>
+                <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">
                         ID:
                     </Typography>
                     <Typography variant="body1">{event_id}</Typography>
-                    </Grid>
-                    <Grid item xs={12}>
+                </Grid>
+                <Grid item xs={12}>
+                    <Typography variant="body2" color="text.secondary">
+                        Notifications:
+                    </Typography>
+                    <Button variant={saleN ? 'contained' : 'outlined'} className='btn m-2 px-3' style={{}}
+                        data-mdb-toggle="button"
+                        onClick={(e) => {e.stopPropagation(); e.preventDefault(); toggleSaleNotification('sale')}}>
+                        General Sale Tickets <Chip className='mx-2' style={{backgroundColor: 'white'}} variant="outlined" label={saleN ? 'ON' : 'OFF'}></Chip>
+                    </Button>
+                    <Button variant={reSaleN ? 'contained' : 'outlined'} className='btn m-2 px-3' style={{}}
+                        data-mdb-toggle="button"
+                        onClick={(e) => {e.stopPropagation(); e.preventDefault(); toggleSaleNotification('resale')}}>
+                        Resale Tickets <Chip className='mx-2' style={{backgroundColor: 'white'}} variant="outlined" label={reSaleN ? 'ON' : 'OFF'}></Chip>
+                    </Button>
+                </Grid>
+                <Grid item xs={12}>
                     <Typography variant="body2" color="text.secondary">
                         Sale Times:
                     </Typography>

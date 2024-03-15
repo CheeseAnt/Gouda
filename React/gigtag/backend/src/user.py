@@ -240,6 +240,9 @@ class User():
         artists = database.get_artists(user_id=self.id)
 
         return artists
+    
+    def set_event_notification(self, event_id: str, **kwargs):
+        database.set_event_notification(user_id=self.id, event_id=event_id, **kwargs)
 
     def get_artist_events(self, artist: str) -> list[Event]:
         return [Event(**row) for row in database.get_artist_events(artist=artist)]

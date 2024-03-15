@@ -66,6 +66,10 @@ async function submitBugReport(text) {
     return await makeRequest("bug_report", {text: text})
 }
 
+async function updateEventNotification(event_id, sales) {
+    return await makeRequest("event_notification", {event_id, ...sales})
+}
+
 async function getUserCountryEnabledEvents() {
     return await makeRequest("user_events")
 }
@@ -74,4 +78,7 @@ async function refreshUserArtists() {
     return await makeRequest("user_artists?fresh=1")
 }
 
-export { getUserInfo, getUserPlaylists, refreshUserPlaylists, togglePlaylist, getuserArtists, refreshUserArtists, toggleArtist, getArtistEvents, getUserSettings, updateUserCountries, getUserCountryEnabledEvents, updateUserTelegramID, submitBugReport, updateUserNotification }
+export { getUserInfo, getUserPlaylists, refreshUserPlaylists, togglePlaylist, getuserArtists,
+    refreshUserArtists, toggleArtist, getArtistEvents, getUserSettings, updateUserCountries,
+    getUserCountryEnabledEvents, updateUserTelegramID, submitBugReport, updateUserNotification,
+    updateEventNotification }

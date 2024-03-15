@@ -85,6 +85,8 @@ def create_db():
             CREATE TABLE USER_EVENT_ENABLE (
                 user_id varchar(256),
                 event_id varchar(256),
+                sale bool,
+                resale bool,
                 events text,
                 PRIMARY KEY (user_id, event_id)
             );
@@ -377,10 +379,13 @@ def get_user_country_specific_enabled_events(user_id: str):
     with Connection() as con:
         cur = con.execute(f"""
         SELECT e.*,
-            GROUP_CONCAT(a.name, ', ') AS artists
+            GROUP_CONCAT(a.name, ', ') AS artists,
+            uee.sale as sale_n,
+            uee.resale as resale_n
         FROM EVENT e
         JOIN ARTIST_ID ai ON e.artist_id = ai.id
         JOIN ARTIST a ON a.name = ai.name
+        LEFT OUTER JOIN USER_EVENT_ENABLE uee ON uee.event_id = e.event_id
         WHERE a.enabled AND {country_clause}
         GROUP BY e.event_id, ai.name
         ORDER BY e.start
@@ -388,14 +393,45 @@ def get_user_country_specific_enabled_events(user_id: str):
         
         return [dict(**row) for row in cur.fetchall()]
 
+def set_event_notification(user_id: str, event_id: str, **kwargs):
+    if not kwargs:
+        return
+
+    with Connection() as con:
+        keys = ",".join(kwargs.keys())
+        inserts = ":" + ",:".join(kwargs.keys())
+
+        try:
+            cur = con.execute(f"INSERT INTO USER_EVENT_ENABLE(user_id, event_id, {keys}) values (:user_id, :event_id, {inserts})",
+                              {
+                                "user_id": user_id,
+                                "event_id": event_id,
+                                **kwargs
+                               })
+            
+            con.commit()
+            return
+        except:
+            con.rollback()
+        
+        update = ",".join(key + "=:" + key for key in kwargs.keys())
+        con.execute(f"UPDATE USER_EVENT_ENABLE SET {update}",
+                    {
+                        "user_id": user_id,
+                        "event_id": event_id,
+                        **kwargs
+                    })
+        
+        con.commit()
+
 if __name__ == '__main__':
     # print(get_unique_enabled_artist_ids())
     with Connection() as con:
-        # cur = con.execute("ALTER TABLE USER ?ADD COLUMN notify_for_gigs bool")
+        cur = con.execute("ALTER TABLE USER_EVENT_ENABLE ADD COLUMN sale bool")
+        cur = con.execute("ALTER TABLE USER_EVENT_ENABLE ADD COLUMN resale bool")
         
         con.commit()
         
         # cur = con.execute("SELECT COUNT(*) FROM EVENT", {'start': datetime.utcnow()})
         print(cur.fetchall()[0][:])
-i
     # create_db()
