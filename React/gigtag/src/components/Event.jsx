@@ -9,14 +9,14 @@ const Event = ({ eventData }) => {
         artists,
         country,
         event_details: {
-        name,
-        images,
-        url,
-        dates: { start },
-        sales,
-        classifications: [primaryClassification],
-        priceRanges,
-        _embedded: { venues: [venue] },
+            name,
+            images,
+            url,
+            dates: { start },
+            sales,
+            classifications: [primaryClassification],
+            priceRanges,
+            _embedded: { venues: [venue] },
         },
     } = eventData;
 

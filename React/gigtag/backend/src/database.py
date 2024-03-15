@@ -7,7 +7,7 @@ class Connection:
         self.path = path
 
     def __enter__(self):
-        self.connection: sqlite3.Connection = sqlite3.connect(self.path)
+        self.connection: sqlite3.Connection = sqlite3.connect(self.path, timeout=30)
         self.connection.row_factory = sqlite3.Row
         return self.connection
 
@@ -288,9 +288,12 @@ def get_events(artist_id: str) -> list[dict]:
         try:
             cur.execute("""
             SELECT e.*,
-                GROUP_CONCAT(ai.name, ', ') AS artists
+                GROUP_CONCAT(ai.name, ', ') AS artists,
+                uee.sale as sale_n,
+                uee.resale as resale_n
             FROM EVENT e
             JOIN ARTIST_ID ai ON e.artist_id = ai.id AND e.artist_id = :artist_id
+            LEFT OUTER JOIN USER_EVENT_ENABLE uee ON uee.event_id = e.event_id
             GROUP BY e.event_id, ai.name
             ORDER BY e.start
             """, {'artist_id': artist_id})
@@ -364,7 +367,18 @@ def get_artist_events(artist: str):
 
 def delete_passed_events():
     with Connection() as con:
-        cur = con.execute(f"""DELETE FROM EVENT WHERE start<=:now""", {'now': datetime.utcnow()})
+        now = datetime.utcnow()
+        cur = con.execute(f"""DELETE FROM USER_EVENT_ENABLE WHERE event_id IN (
+  SELECT event_id
+  FROM EVENT e
+  WHERE e.start <= :now
+) """, {'now': now})
+        cur = con.execute(f"""DELETE FROM EVENT_STATUS WHERE event_id IN (
+  SELECT event_id
+  FROM EVENT e
+  WHERE e.start <= :now
+)""", {'now': now})
+        cur = con.execute(f"""DELETE FROM EVENT WHERE start<=:now""", {'now': now})
 
         con.commit()
 
@@ -373,6 +387,8 @@ def get_user_country_specific_enabled_events(user_id: str):
     
     if countries:
         countries = countries.split(",")
+    else:
+        countries = ''
 
     country_clause = f"e.country in ({','.join('?'*len(countries))})" if countries else "1"
 
@@ -415,7 +431,7 @@ def set_event_notification(user_id: str, event_id: str, **kwargs):
             con.rollback()
         
         update = ",".join(key + "=:" + key for key in kwargs.keys())
-        con.execute(f"UPDATE USER_EVENT_ENABLE SET {update}",
+        con.execute(f"UPDATE USER_EVENT_ENABLE SET {update} WHERE event_id=:event_id AND user_id=:user_id",
                     {
                         "user_id": user_id,
                         "event_id": event_id,
@@ -424,14 +440,89 @@ def set_event_notification(user_id: str, event_id: str, **kwargs):
         
         con.commit()
 
-if __name__ == '__main__':
-    # print(get_unique_enabled_artist_ids())
+def set_event_status(event_id: str, sale: bool, resale: bool):
+    now = datetime.utcnow()
+
     with Connection() as con:
-        cur = con.execute("ALTER TABLE USER_EVENT_ENABLE ADD COLUMN sale bool")
-        cur = con.execute("ALTER TABLE USER_EVENT_ENABLE ADD COLUMN resale bool")
+        try:
+            cur = con.execute(f"INSERT INTO EVENT_STATUS(event_id, sale, resale, saledate, resaledate) values (:event_id, :sale, :resale, :now, :now)",
+                              {
+                                "event_id": event_id,
+                                "sale": sale,
+                                "resale": resale,
+                                "now": now
+                               })
+            
+            con.commit()
+            return
+        except:
+            con.rollback()
+        
+        row = con.execute("SELECT * FROM EVENT_STATUS WHERE event_id=:event_id", {"event_id": event_id}).fetchone()
+        sets = []
+        if row['sale'] != sale:
+            sets.append("sale=:sale,saledate=:now")
+        
+        if row['resale'] != resale:
+            sets.append("resale=:resale,resaledate=:now")
+        
+        if not sets:
+            return
+        
+        update = ",".join(sets)
+        
+        con.execute(f"UPDATE EVENT_STATUS SET {update} WHERE event_id=:event_id",
+                    {
+                        "event_id": event_id,
+                        "sale": sale,
+                        "resale": resale,
+                        "now": now
+                    })
         
         con.commit()
+
+def get_notif_enabled_events():
+    with Connection() as con:
+        cur = con.execute(f"""SELECT event_id FROM USER_EVENT_ENABLE WHERE sale or resale""")
+        return [a['event_id'] for a in cur.fetchall()]
+
+def get_notification_events():
+    with Connection() as con:
+        cur = con.execute(f"""SELECT 
+                            es.*,
+                            uee.sale as sale_enabled,
+                            uee.resale as resale_enabled,
+                            u.telegramID,
+                            u.id as user_id,
+                            e.event_details
+                          FROM EVENT_STATUS es
+                          JOIN USER_EVENT_ENABLE uee ON uee.event_id=es.event_id AND (uee.sale=es.sale OR uee.resale=es.resale)
+                          JOIN USER u ON uee.user_id=u.id AND u.telegramID is not null
+                          JOIN EVENT e ON es.event_id=e.event_id
+                          WHERE es.sale or es.resale""")
+
+        return [dict(**a) for a in cur.fetchall()]
+
+def has_been_notified(user_id: str, hash_string: str) -> bool:
+    with Connection() as con:
+        res = con.execute("SELECT * FROM USER_NOTIFICATIONS WHERE user_id=:user_id AND hash=:hash", {'user_id': user_id, 'hash': hash_string}).fetchall()
+
+        has_notification = len(res) > 0
+
+        if not has_notification:
+            con.execute("INSERT INTO USER_NOTIFICATIONS(user_id, hash, date) values (:user_id, :hash, :date)", {'user_id': user_id, 'hash': hash_string, 'date': datetime.utcnow()})
+            con.commit()
+
+        return has_notification
+
+if __name__ == '__main__':
+    # print(get_unique_enabled_artist_ids())
+    # with Connection() as con:
+    #     cur = con.execute("ALTER TABLE USER_EVENT_ENABLE ADD COLUMN sale bool")
+    #     cur = con.execute("ALTER TABLE USER_EVENT_ENABLE ADD COLUMN resale bool")
+        
+    #     con.commit()
         
         # cur = con.execute("SELECT COUNT(*) FROM EVENT", {'start': datetime.utcnow()})
-        print(cur.fetchall()[0][:])
-    # create_db()
+        # print(cur.fetchall()[0][:])
+    create_db()

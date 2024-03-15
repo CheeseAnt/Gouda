@@ -42,7 +42,7 @@ const ArtistEvents = ({artist, show, setShow}) => {
     }
 
     return (    
-        <Modal show={show} fullscreen={'xl-down'} onHide={close}>
+        <Modal className='modal-lg' show={show} fullscreen={'xl-down'} onHide={close}>
             <Modal.Header closeButton>
                 <Modal.Title>{artist.name}</Modal.Title>
             </Modal.Header>

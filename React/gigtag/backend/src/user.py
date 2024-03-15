@@ -24,22 +24,6 @@ class Playlist():
         return sd
 
 @dataclass
-class Event():
-    artist_id: str
-    event_id: str
-    event_details: dict
-    start: datetime
-    onsale: datetime
-    presale: datetime
-    venue: str
-    country: str
-    artists: str
-
-    def as_dict(self):
-        sd = asdict(self)
-        return sd
-
-@dataclass
 class Artist():
     user_id: int
     name: str
@@ -244,8 +228,8 @@ class User():
     def set_event_notification(self, event_id: str, **kwargs):
         database.set_event_notification(user_id=self.id, event_id=event_id, **kwargs)
 
-    def get_artist_events(self, artist: str) -> list[Event]:
-        return [Event(**row) for row in database.get_artist_events(artist=artist)]
+    def get_artist_events(self, artist: str) -> list[dict]:
+        return [dict(**row) for row in database.get_artist_events(artist=artist)]
     
     def get_country_enabled_events(self) -> list[dict]:
         return database.get_user_country_specific_enabled_events(user_id=self.id)

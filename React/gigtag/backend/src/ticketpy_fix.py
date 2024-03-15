@@ -2,6 +2,7 @@ import ticketpy.model
 import time
 from collections import namedtuple
 from datetime import datetime
+import requests
 
 @staticmethod
 def __error(response):
@@ -40,6 +41,20 @@ def __get(self, **kwargs):
         time.sleep(max(last_query_time+interval-time.time(), 0))
 
     response = self.api_client.search(self.method, **kwargs)
+    
+    last_query_time = time.time()
+
+    return response
+
+def rated_request(url: str, method=requests.get, **kwargs):
+    """Sends request by rate limit"""
+    global last_query_time
+
+    if (time.time() - last_query_time) < period:
+        # print("sleeping between queries", last_query_time+interval-time.time())
+        time.sleep(max(last_query_time+interval-time.time(), 0))
+
+    response = method(url=url, **kwargs)
     
     last_query_time = time.time()
 

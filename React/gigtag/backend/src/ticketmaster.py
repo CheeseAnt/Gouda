@@ -38,6 +38,7 @@ def get_attraction_events(api: ticketpy.ApiClient, attraction_ids: str):
         for event in page:
             for attraction in event.attractions:
                 print(f"Adding event for artist {attraction.name}, event {event.name} at {event.utc_datetime}")
+                
                 try:
                     database.insert_event(
                         artist_id=attraction.id,
@@ -121,6 +122,54 @@ def update_artist_events_for_one_name(artist: str):
 
     get_attraction_events(api=api, attraction_ids=artist_id)
 
+class EventTicketsAvailable():
+    IN_STOCK = ("TICKETS_AVAILABLE", "FEW_TICKETS_LEFT")
+    def __init__(self, event_id: str, sale: str, resale: str):
+        self.event_id = event_id
+        self.sale = sale in self.IN_STOCK
+        self.resale = resale in self.IN_STOCK
+
+INVENTORY_URL = "https://app.ticketmaster.com/inventory-status/v1/availability?events={event_ids}&apikey={api_key}"
+
+def get_event_availability(event_ids: list[str]) -> list[EventTicketsAvailable]:
+    """Get event ticket availabilities
+
+    Args:
+        event_ids (list[str]): list of event ids
+
+    Returns:
+        list[EventTicketsAvailable]: List of events and their ticket availabilities
+    """
+    
+    tickets = list()
+    for first_idx in range(0, len(event_ids), 1000):
+        subset = ",".join(event_ids[first_idx: first_idx+1000])
+        print("Making inventory request")
+        response = ticketpy_fix.rated_request(
+            url=INVENTORY_URL.format(
+                event_ids=subset,
+                api_key=settings.TICKETMASTER_API_KEY
+            ))
+        if response.status_code != 200:
+            print("Failed to make request to ticketmaster inventory")
+            continue
+
+        json = response.json()
+        
+        tickets.extend([EventTicketsAvailable(event_id=j['eventId'], sale=j['status'], resale=j['resaleStatus']) for j in json])
+
+    return tickets
+
+def update_event_ticket_availability():
+    print("Getting enabled events")
+    event_ids = database.get_notif_enabled_events()
+    print("Getting inventory status", event_ids)
+    event_tickets = get_event_availability(event_ids=event_ids)
+    
+    print("Setting database fields")
+    for event_ticket in event_tickets:
+        database.set_event_status(event_id=event_ticket.event_id, sale=event_ticket.sale, resale=event_ticket.resale)
+
 def sleep_until(target_time: str):
     # Get current time
     current_time = datetime.now()
@@ -145,11 +194,8 @@ def _start():
     api = ticketpy.ApiClient(api_key=settings.TICKETMASTER_API_KEY)
     
     while True:
-        sleep_until("17:15")
+        sleep_until("15:30")
 
         resolve_new_artists(api=api)
         get_artist_events(api=api)
         database.delete_passed_events()
-
-async def start():
-    threading.Thread(target=_start, daemon=True).start()    
