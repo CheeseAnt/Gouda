@@ -4,8 +4,11 @@ import time
 
 def do_regular_ticket_check():
     while True:
-        ticketmaster.update_event_ticket_availability()
-        telegram.send_notifications_for_tickets()
+        try:
+            ticketmaster.update_event_ticket_availability()
+            telegram.send_notifications_for_tickets()
+        except:
+            pass
 
         # sleep for 15 minutes
         time.sleep(60 * 15)

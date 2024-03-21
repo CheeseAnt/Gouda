@@ -49,7 +49,7 @@ const UserSettings = ({user, setShow, show}) => {
             }
 
             const json = await res.json();
-            json.countries = json.countries.split ? json.countries.split(",") : [];
+            json.countries = json.countries?.split ? json.countries.split(",") : [];
             setSettings(json);
 
             setDone(true);

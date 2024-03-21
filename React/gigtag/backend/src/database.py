@@ -3,7 +3,7 @@ import json
 from datetime import datetime, timedelta
 
 class Connection:
-    def __init__(self, path="gigtag.db"):
+    def __init__(self, path="data/gigtag.db"):
         self.path = path
 
     def __enter__(self):

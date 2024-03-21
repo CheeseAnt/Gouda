@@ -194,8 +194,8 @@ def _start():
     api = ticketpy.ApiClient(api_key=settings.TICKETMASTER_API_KEY)
     
     while True:
-        sleep_until("15:30")
-
         resolve_new_artists(api=api)
         get_artist_events(api=api)
         database.delete_passed_events()
+
+        sleep_until("15:30")
