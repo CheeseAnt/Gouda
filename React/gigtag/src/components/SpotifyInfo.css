@@ -1,0 +1,18 @@
+/* 2A363B BLACK
+    99B898 GREEN
+    FECEA8 CREAM
+    FF847C PEACH
+    E84A5F RED
+*/
+.navbar-body {
+    background-color: #2A363B;
+    color: whitesmoke;
+}
+
+.navbar-brand, .nav-link {
+    color: whitesmoke
+}
+
+.navbar-brand:hover, .nav-link:hover {
+    color: #FECEA8
+}
