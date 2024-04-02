@@ -103,12 +103,20 @@ class User():
             print("Failed to add personal playlist")
 
         for playlist in playlists:
+            if not playlist:
+                continue
+
+            try:
+                image_url = playlist['images'][0]['url']
+            except:
+                image_url = ''
+
             if database.get_playlist(user_id=self.id, id=playlist['id']):
                 database.update_playlist(
                     user_id=self.id,
                     id=playlist['id'],
                     kwargs={
-                        'image_url': playlist['images'][0]['url'] if len(playlist['images']) else '',
+                        'image_url':  image_url,
                         'track_count': playlist['tracks']['total'],
                     }
                 )
@@ -118,7 +126,7 @@ class User():
                 user_id=self.id,
                 id=playlist['id'],
                 name=playlist['name'],
-                image_url=playlist['images'][0]['url'] if len(playlist['images']) else '',
+                image_url=image_url,,
                 tracks_url=playlist['tracks']['href'],
                 count=playlist['tracks']['total'],
                 public=playlist['public'],
