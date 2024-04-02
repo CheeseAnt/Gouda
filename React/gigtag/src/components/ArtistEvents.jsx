@@ -49,7 +49,7 @@ const ArtistEvents = ({artist, show, setShow}) => {
             <Modal.Body>
                 { loading ? <Loader /> :
                 <div>
-                    <Button className='btn btn-secondary w-100' onClick={() => getEvents(true)}>Refresh</Button>
+                    <Button className='btn gg-cream gg-cream-o w-100' onClick={() => getEvents(true)}>Refresh</Button>
                     {
                         done && events.length === 0 ? <h2>No Events Found</h2> : 
                         events.map((event, idx) => {

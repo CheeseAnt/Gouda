@@ -2,6 +2,43 @@
   text-align: center;
 }
 
+body {
+  background-color: #99B898;
+}
+
+.gg-peach {
+  background-color: #FF847C !important;
+  color: whitesmoke !important;
+}
+
+.gg-red {
+  background-color: #E84A5F !important;
+  color: whitesmoke !important;
+}
+
+.gg-cream {
+  background-color: #FECEA8 !important;
+  color: black !important;
+}
+
+.gg-cream-o {
+  border-color: #FECEA8 !important;
+  color: #E84A5F !important;
+}
+
+.gg-red-c {
+  color: #E84A5F !important;
+}
+
+.gg-green {
+  background-color: #99B898 !important;
+}
+
+.gg-black {
+  background-color: #2A363B !important;
+  color: whitesmoke !important;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -14,18 +51,18 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: #2A363B;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+  color: whitesmoke;
 }
 
 .App-link {
-  color: #61dafb;
+  color: #E84A5F;
 }
 
 @keyframes App-logo-spin {
@@ -47,7 +84,7 @@
 }
 
 .playlist {
-  background-color: aliceblue;
+  background-color: transparent;
   border-radius: 10px;
   place-items: center;
   padding: 10px;
@@ -82,13 +119,13 @@
 }
 
 .artist:hover {
-  background-color: lavender;
+  background-color: #FF847C;
   cursor: pointer;
   border-radius: 10px;
 }
 
 .event:hover {
-  background-color: lavender;
+  background-color: #FF847C;
   cursor: pointer;
 }
 
@@ -99,8 +136,8 @@
 }
 
 .thumb-photo {
-  width: 64px;
-  height: 64px;
+  width: 48px;
+  height: 48px;
 }
 
 .wide-modal {
@@ -115,7 +152,7 @@
   padding: 10px 20px;
   border: 1px dashed!important;
   border-radius: 5px;
-  color: white;
+  color: whitesmoke;
   font-weight: bold;
   cursor: pointer;
   z-index: 999; /* Ensure button appears on top of other elements */

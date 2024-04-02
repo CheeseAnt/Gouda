@@ -108,7 +108,7 @@ class User():
                     user_id=self.id,
                     id=playlist['id'],
                     kwargs={
-                        'image_url': playlist['images'][0]['url'],
+                        'image_url': playlist['images'][0]['url'] if len(playlist['images']) else '',
                         'track_count': playlist['tracks']['total'],
                     }
                 )
@@ -118,7 +118,7 @@ class User():
                 user_id=self.id,
                 id=playlist['id'],
                 name=playlist['name'],
-                image_url=playlist['images'][0]['url'],
+                image_url=playlist['images'][0]['url'] if len(playlist['images']) else '',
                 tracks_url=playlist['tracks']['href'],
                 count=playlist['tracks']['total'],
                 public=playlist['public'],

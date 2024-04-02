@@ -402,10 +402,10 @@ def get_user_country_specific_enabled_events(user_id: str):
         JOIN ARTIST_ID ai ON e.artist_id = ai.id
         JOIN ARTIST a ON a.name = ai.name
         LEFT OUTER JOIN USER_EVENT_ENABLE uee ON uee.event_id = e.event_id
-        WHERE a.enabled AND {country_clause}
+        WHERE a.enabled AND {country_clause} AND a.user_id=?
         GROUP BY e.event_id, ai.name
         ORDER BY e.start
-        """, countries)
+        """, (*countries, user_id))
         
         return [dict(**row) for row in cur.fetchall()]
 

@@ -32,7 +32,7 @@ const Event = ({ eventData }) => {
 
     const genre = primaryClassification?.genre?.name || 'Rock';
 
-    const priceDisplay = priceRanges
+    const priceDisplay = (priceRanges ?? [false])[0]
         ? `${priceRanges[0].currency} ${priceRanges[0].min} - ${priceRanges[0].max}`
         : 'Price TBA';
 
@@ -93,7 +93,7 @@ const Event = ({ eventData }) => {
                         <Typography variant="h5" component="div">
                             {name}
                         </Typography>
-                        <Chip label={genre} color="primary" variant="contained" sx={{ mx: 1 }} />
+                        <Chip label={genre} className='gg-cream' variant="contained" sx={{ mx: 1 }} />
                     </div>
                 </Grid>
                 <Grid item xs={12}>
@@ -130,12 +130,12 @@ const Event = ({ eventData }) => {
                     <Typography variant="body2" color="text.secondary">
                         Notifications:
                     </Typography>
-                    <Button variant={saleN ? 'contained' : 'outlined'} className='btn m-2 px-3' style={{}}
+                    <Button variant={saleN ? 'contained' : 'outlined'} className={'btn m-2 px-3' + (saleN ? ' gg-cream': ' gg-cream-o')}  style={{}}
                         data-mdb-toggle="button"
                         onClick={(e) => {e.stopPropagation(); e.preventDefault(); toggleSaleNotification('sale')}}>
                         General Sale Tickets <Chip className='mx-2' style={{backgroundColor: 'white'}} variant="outlined" label={saleN ? 'ON' : 'OFF'}></Chip>
                     </Button>
-                    <Button variant={reSaleN ? 'contained' : 'outlined'} className='btn m-2 px-3' style={{}}
+                    <Button variant={reSaleN ? 'contained' : 'outlined'} className={'btn m-2 px-3' + (reSaleN ? ' gg-cream': ' gg-cream-o')} style={{}}
                         data-mdb-toggle="button"
                         onClick={(e) => {e.stopPropagation(); e.preventDefault(); toggleSaleNotification('resale')}}>
                         Resale Tickets <Chip className='mx-2' style={{backgroundColor: 'white'}} variant="outlined" label={reSaleN ? 'ON' : 'OFF'}></Chip>
@@ -145,8 +145,8 @@ const Event = ({ eventData }) => {
                     <Typography variant="body2" color="text.secondary">
                         Sale Times:
                     </Typography>
-                    {saleValues.map(sale => 
-                        <Box key={sale.name} sx={{
+                    {saleValues.map((sale, idx) => 
+                        <Box key={idx} sx={{
                             display: 'flex',
                             alignItems: 'center',
                             border: '1px solid',
@@ -168,7 +168,7 @@ const Event = ({ eventData }) => {
                             <Typography variant="body2">{sale.name}</Typography>
                             <Divider orientation="vertical" variant="middle" flexItem />
                             <Typography variant="body2">{sale.start}</Typography>
-                            {sale.started ? <Chip className='mx-1' color="primary" label='Started'/> : <Chip className='mx-1' color="secondary" label='Soon'/>}
+                            {sale.started ? <Chip className='mx-1 gg-cream' label='Started'/> : <Chip className='mx-1' color="secondary" label='Soon'/>}
                         </Box>
                     )}
                 </Grid>

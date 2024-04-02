@@ -33,10 +33,10 @@ const BugReportButton = () => {
                         <Form.Control autoFocus={true} onChange={(event) => {setBugText(event.target.value)}} style={{resize: 'none'}} as="textarea" rows={4} placeholder='Please write a description of what happened or what you saw in as much detail as you can. Include some steps if possible!'/>
                     </Form.Group>
                 </InputGroup>
-                <Button variant='outlined' onClick={submit}>Submit</Button>
+                <Button variant='outlined'  className='gg-cream-o' onClick={submit}>Submit</Button>
             </Modal.Body>
         </Modal>
-        <Button className="btn report-bug-btn" onClick={handleClick} startIcon={<BugReport />}>
+        <Button className="btn report-bug-btn gg-red-c" onClick={handleClick} startIcon={<BugReport />}>
         Report Bug
         </Button>
         </div>

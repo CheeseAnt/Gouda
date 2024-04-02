@@ -9,6 +9,25 @@ import { Artists } from './components/Artists'
 import { TargettedEvents } from './components/TargettedEvents'
 import { useTelegramAuthResponse } from './components/TelegramAuth'
 import BugReportButton from './components/BugReport'
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <TargettedEvents />
+  },
+  {
+    path: "/artists",
+    element: <Artists name='Artists' />
+  },
+  {
+    path: "/playlists",
+    element: <SpotifyInfo />
+  }
+]);
 
 const App = () => {
   const [token, setToken] = React.useState(Cookies.get("spotifyAuthToken"))
@@ -31,9 +50,7 @@ const App = () => {
       {!invalidToken && token ? (
         <div>
           <SpotifyUserInfo setInvalid={resetInvalid}>
-            <TargettedEvents name='Events' />
-            <Artists name='Artists' />
-            <SpotifyInfo name='Playlists' />
+            <RouterProvider router={router} />
           </SpotifyUserInfo>
         </div>
       ) : (

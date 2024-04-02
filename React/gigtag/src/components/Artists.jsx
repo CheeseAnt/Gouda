@@ -93,7 +93,7 @@ const Artists = () => {
         {
             loading ? <Loader /> :
             <div className='container'>
-                <button className='btn btn-info px-10 w-100' onClick={refreshArtists}>Refresh from Spotify</button>
+                <button className='btn gg-cream px-10 w-100 mt-3' onClick={refreshArtists}>Refresh from Spotify</button>
                 <div className="d-flex">
                     <button className='btn btn-secondary m-1 w-50' onClick={() => setSortType('byName')}>Sort By Name</button>
                     <button className='btn btn-secondary m-1 w-50' onClick={() => setSortType('byTracks')}>Sort By Favourite</button>
@@ -109,7 +109,7 @@ const Artists = () => {
                                     <h3 className='mx-3 text-muted'>{artist.last_updated}</h3>
                                 </div>
                             </div>
-                            <button className='btn btn-info m-3 px-4' style={{fontSize: 'xxx-large'}} data-mdb-toggle="button" onClick={(e) => {toggleAr(artist); e.stopPropagation()}}>
+                            <button className='btn gg-cream m-3 px-4' style={{fontSize: 'xxx-large'}} data-mdb-toggle="button" onClick={(e) => {toggleAr(artist); e.stopPropagation()}}>
                                 {artist.enabled ? '☑' : '☐'}
                             </button>
                         </div>

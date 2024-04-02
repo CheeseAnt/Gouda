@@ -20,11 +20,15 @@ def get_user(auth_token: str) -> user.User:
         if not user_info:
             raise InvalidToken()
         
+        if len(user_info['images']) > 0:
+            image_url = user_info['images'][-1]['url']
+        else:
+            image_url = 'https://www.freepnglogos.com/uploads/spotify-logo-png/spotify-brands-logo-34.png'
         _cache[auth_token] = user.User(
             id=user_info['id'],
             name=user_info['display_name'],
             email=user_info['email'],
-            photo_url=user_info['images'][-1]['url'],
+            photo_url=image_url,
             _api=api
         )
 

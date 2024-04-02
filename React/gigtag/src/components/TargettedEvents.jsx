@@ -1,7 +1,44 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getUserCountryEnabledEvents } from "../api";
 import { Loader } from "./Loader";
 import Event from "./Event";
+
+const useNearBottom = () => {
+    const [isNearBottom, setIsNearBottom] = useState(false);
+    const previous = useRef(false);
+    const [trigger, setTrigger] = useState(false);
+
+    const handleScroll = (event) => {
+        const { scrollHeight } = document.body;
+        const { height } = window.screen;
+        const { scrollY } = window;
+        const threshold = height; // Adjust threshold value as needed (in pixels)
+
+        const isCloseToBottom = scrollY >= (scrollHeight-height) - threshold;
+        setIsNearBottom(isCloseToBottom);
+    };
+
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll);
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (isNearBottom && !previous.current) {
+            previous.current = true;
+            setTrigger(true);
+        }
+        else if (!isNearBottom && previous.current) {
+            previous.current = false;
+            setTrigger(false);
+        }
+    }, [isNearBottom]);
+
+    return {trigger};
+}
 
 const useEvents = () => {
     const [events, setEvents] = useState([]);
@@ -49,20 +86,40 @@ const useEvents = () => {
 }
 
 const TargettedEvents = () => {
-    const { events, loading, refreshEvents } = useEvents();
+    const { events, loading } = useEvents();
+    const [ loadingMore, setLoadingMore ] = useState(true);
+    const [ limit, setLimit ] = useState(50)
+    const { trigger } = useNearBottom();
+
+    useEffect(() => {
+        if(!trigger) {
+            return;
+        }
+
+        setLimit(previous => {
+            if (previous >= events.length) {
+                setLoadingMore(false);
+
+                return previous
+            };
+
+            setLoadingMore(true);
+            return Math.min(previous + 10, events.length)
+        });
+    }, [trigger, events.length])
 
     return <div>
         {
             loading ? <Loader /> :
             <div className='container'>
-                <button className='btn btn-info px-10 w-100' onClick={refreshEvents}>Refresh Events</button>
                 <div className="d-flex">
                 </div>
-                <h4 className="text-muted">Total Events: {events.length}</h4>
+                <h4 className="text-muted" style={{left: "10%", position: "absolute"}}>Total Events: {events.length}</h4>
                 <div className="container">
-                    {events.map((event, idx) => {
+                    {events.slice(0, limit).map((event, idx) => {
                         return <Event key={idx} eventData={event} />
                     })}
+                    {loadingMore ? <Loader /> : null}
                 </div>
             </div>
         }
