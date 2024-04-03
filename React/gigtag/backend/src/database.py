@@ -286,7 +286,7 @@ def delete_artist(user_id: str, name: str):
         locked_commit(con)
         cur.fetchall()
 
-def get_events(artist_id: str) -> list[dict]:
+def get_events(user_id: str, artist_id: str) -> list[dict]:
     """Fetches all events for a given artist from the database.
 
     Args:
@@ -311,10 +311,10 @@ def get_events(artist_id: str) -> list[dict]:
                 uee.resale as resale_n
             FROM EVENT e
             JOIN ARTIST_ID ai ON e.artist_id = ai.id AND e.artist_id = :artist_id
-            LEFT OUTER JOIN USER_EVENT_ENABLE uee ON uee.event_id = e.event_id
+            LEFT OUTER JOIN USER_EVENT_ENABLE uee ON uee.event_id = e.event_id AND uee.user_id=:user_id
             GROUP BY e.event_id, ai.name
             ORDER BY e.start
-            """, {'artist_id': artist_id})
+            """, {'artist_id': artist_id, 'user_id': user_id})
             events = cur.fetchall()
         except Exception as e:
             raise Exception(f"Error fetching events for artist {artist_id}: {e}") from e
@@ -372,14 +372,14 @@ def update_event(artist_id: str, event_id: str, **kwargs: dict):
 
         locked_commit(con)
 
-def get_artist_events(artist: str):
+def get_artist_events(user_id: str, artist: str):
     with Connection() as con:
         cur = con.execute(f"""SELECT DISTINCT id FROM ARTIST_ID WHERE name=:name""", {'name': artist})
         ids = [a['id'] for a in cur.fetchall()]
 
     events = list()
     for artist_id in ids:
-        events.extend(get_events(artist_id=artist_id))
+        events.extend(get_events(user_id=user_id, artist_id=artist_id))
 
     return events
 
@@ -419,11 +419,11 @@ def get_user_country_specific_enabled_events(user_id: str):
         FROM EVENT e
         JOIN ARTIST_ID ai ON e.artist_id = ai.id
         JOIN ARTIST a ON a.name = ai.name
-        LEFT OUTER JOIN USER_EVENT_ENABLE uee ON uee.event_id = e.event_id
-        WHERE a.enabled AND {country_clause} AND a.user_id=?
+        LEFT OUTER JOIN USER_EVENT_ENABLE uee ON uee.event_id = e.event_id AND uee.user_id=?
+        WHERE a.enabled AND {country_clause} AND a.user_id=uee.user_id
         GROUP BY e.event_id, ai.name
         ORDER BY e.start
-        """, (*countries, user_id))
+        """, (user_id, *countries))
         
         return [dict(**row) for row in cur.fetchall()]
 

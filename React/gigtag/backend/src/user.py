@@ -237,7 +237,7 @@ class User():
         database.set_event_notification(user_id=self.id, event_id=event_id, **kwargs)
 
     def get_artist_events(self, artist: str) -> list[dict]:
-        return [dict(**row) for row in database.get_artist_events(artist=artist)]
+        return [dict(**row) for row in database.get_artist_events(user_id=self.id, artist=artist)]
     
     def get_country_enabled_events(self) -> list[dict]:
         return database.get_user_country_specific_enabled_events(user_id=self.id)
