@@ -44,7 +44,11 @@ const App = () => {
       localStorage.clear("spotifyAuthToken");
     }
   }, [setInvalidToken]);
-  
+
+  if(document.location.protocol==='http:' && document.location.hostname.includes("gigtag.duckdns.org")) {
+    document.location.href = document.location.href.replace("http://", "https://")
+  }
+
   return (
     <div className='app'>
       {!invalidToken && token ? (

@@ -37,7 +37,7 @@ def get_attraction_events(api: ticketpy.ApiClient, attraction_ids: str):
     for page in api.events.find(attraction_id=attraction_ids, size=200):
         for event in page:
             for attraction in event.attractions:
-                print(f"Adding event for artist {attraction.name}, event {event.name} at {event.utc_datetime}")
+                # print(f"Adding event for artist {attraction.name}, event {event.name} at {event.utc_datetime}")
                 
                 try:
                     database.insert_event(
