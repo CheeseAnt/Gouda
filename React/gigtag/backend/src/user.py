@@ -126,7 +126,7 @@ class User():
                 user_id=self.id,
                 id=playlist['id'],
                 name=playlist['name'],
-                image_url=image_url,,
+                image_url=image_url,
                 tracks_url=playlist['tracks']['href'],
                 count=playlist['tracks']['total'],
                 public=playlist['public'],
