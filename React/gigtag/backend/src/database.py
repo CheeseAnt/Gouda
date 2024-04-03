@@ -510,7 +510,7 @@ def get_notification_events():
                                                          WHERE es.sale or es.resale
                                                         """).fetchall()]
         event_enables = [dict(**a) for a in con.execute("""
-                                                        SELECT uee.sale, uee.resale, uee.event_id, u.id, u.telegramID
+                                                        SELECT uee.sale as sale_enabled, uee.resale as resale_enabled, uee.event_id, u.id as user_id, u.telegramID
                                                         FROM USER_EVENT_ENABLE uee
                                                         JOIN USER u ON uee.user_id=u.id AND u.telegramID is not null
                                                         WHERE uee.sale or uee.resale
@@ -519,7 +519,7 @@ def get_notification_events():
         event_enables = {e["event_id"]: e for e in event_enables}
 
         for event in event_statuses:
-            event.update(event_enables.get(event.pop("event_id"), {}))
+            event.update(event_enables.get(event.get("event_id"), {}))
 
         return event_statuses
 
