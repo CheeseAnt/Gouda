@@ -119,13 +119,13 @@ body {
 }
 
 .artist:hover {
-  background-color: #FF847C;
+  background-color: #FF847C99;
   cursor: pointer;
   border-radius: 10px;
 }
 
 .event:hover {
-  background-color: #FF847C;
+  background-color: #FF847C99;
   cursor: pointer;
 }
 
