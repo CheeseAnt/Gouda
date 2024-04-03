@@ -5,8 +5,10 @@ import time
 def do_regular_ticket_check():
     while True:
         try:
+            print("Started ticket check")
             ticketmaster.update_event_ticket_availability()
             telegram.send_notifications_for_tickets()
+            print("Finished sending notifications")
         except:
             pass
 

@@ -170,6 +170,8 @@ def update_event_ticket_availability():
     for event_ticket in event_tickets:
         database.set_event_status(event_id=event_ticket.event_id, sale=event_ticket.sale, resale=event_ticket.resale)
 
+    print("Updated event tickets availability")
+
 def sleep_until(target_time: str):
     # Get current time
     current_time = datetime.now()
@@ -194,8 +196,15 @@ def _start():
     api = ticketpy.ApiClient(api_key=settings.TICKETMASTER_API_KEY)
     
     while True:
-        resolve_new_artists(api=api)
-        get_artist_events(api=api)
-        database.delete_passed_events()
+        try:
+            print("Getting new artists")
+            resolve_new_artists(api=api)
+            print("Getting events")
+            get_artist_events(api=api)
+            print("Deleting old events")
+            database.delete_passed_events()
+        except Exception as ex:
+            print(f"Hit problem: {ex} while scheduled pulling")
+            pass
 
         sleep_until("15:30")

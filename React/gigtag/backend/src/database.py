@@ -1,6 +1,18 @@
 import sqlite3
 import json
 from datetime import datetime, timedelta
+from multiprocessing import Lock
+
+_lock = Lock()
+
+def locked_commit(con, attempt: int=0):
+    try:
+        con.commit()
+    except:
+        if attempt > 3:
+            raise
+        return locked_commit(con=con, attempt=attempt+1)
+
 
 class Connection:
     def __init__(self, path="data/gigtag.db"):
@@ -9,10 +21,13 @@ class Connection:
     def __enter__(self):
         self.connection: sqlite3.Connection = sqlite3.connect(self.path, timeout=30)
         self.connection.row_factory = sqlite3.Row
+
+        _lock.acquire()
         return self.connection
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connection.close()
+        _lock.release()
 
 class Duplicate(Exception):
     pass
@@ -112,7 +127,7 @@ def create_db():
         """)
 
 
-        con.commit()
+        locked_commit(con)
 
         print("Created", cur.fetchall())
 
@@ -122,7 +137,7 @@ def insert_user(user_id: str, email: str):
     INSERT INTO USER (id, email, last_updated_playlists, last_updated_artists) values (:user, :email, :p, :a)
                     """, {'user':user_id, 'email':email, 'p': datetime.utcnow()-timedelta(days=1), 'a': datetime.utcnow()-timedelta(days=1)})
 
-        con.commit()
+        locked_commit(con)
 
 def update_user(user_id: str, kwargs: dict):
     with Connection() as con:
@@ -134,17 +149,17 @@ def update_user(user_id: str, kwargs: dict):
     WHERE id=:user_id
                     """, {'user_id': user_id, **kwargs})
 
-        con.commit()
+        locked_commit(con)
 
 def update_playlist_time(user_id: str):
     with Connection() as con:
         cur = con.execute("UPDATE USER SET last_updated_playlists=:time WHERE id=:user_id", {"time": datetime.utcnow(), "user_id": user_id})
-        con.commit()
+        locked_commit(con)
 
 def update_artist_time(user_id: str):
     with Connection() as con:
         cur = con.execute("UPDATE USER SET last_updated_artists=:time WHERE id=:user_id", {"time": datetime.utcnow(), "user_id": user_id})
-        con.commit()
+        locked_commit(con)
 
 def get_latest_playlist_update(user_id: str):
     with Connection() as con:
@@ -165,7 +180,7 @@ def insert_playlist(user_id: str, id: str, name: str, image_url: str, tracks_url
     values (:user_id, :id, :name, :image_url, :tracks_url, :count, :public, :owner, :type, :last_updated, :enabled)
                     """, {'user_id': user_id, 'id': id, 'name': name, 'image_url': image_url, 'tracks_url': tracks_url, 'count': count, 'public': public, 'owner': owner, 'type': type, 'enabled': enabled, 'last_updated': datetime.utcnow()})
 
-        con.commit()
+        locked_commit(con)
 
         cur.fetchall()
 
@@ -180,7 +195,7 @@ def update_playlist(user_id: str, id: str, kwargs: dict):
     WHERE user_id=:user_id AND id=:id 
                     """, {'user_id': user_id, 'id': id, **kwargs})
 
-        con.commit()
+        locked_commit(con)
 
 def get_playlist(user_id: str, id: str):
     with Connection() as con:
@@ -201,7 +216,7 @@ def insert_artist(user_id: str, name: str, tracks: int, enabled: bool):
     values (:user_id, :name, :last_updated, :tracks, :enabled)
                     """, {'user_id': user_id, 'name': name, 'enabled': enabled, 'tracks': tracks, 'last_updated': datetime.utcnow()})
 
-        con.commit()
+        locked_commit(con)
 
         cur.fetchall()
 
@@ -212,7 +227,7 @@ def insert_artist_id(name: str, id: str):
     values (:name, :id)
                     """, {'name': name, 'id': id})
 
-        con.commit()
+        locked_commit(con)
 
         cur.fetchall()
 
@@ -227,7 +242,7 @@ def update_artist(user_id: str, name: str, kwargs: dict):
     WHERE user_id=:user_id AND name=:name 
                     """, {'user_id': user_id, 'name': name, **kwargs})
 
-        con.commit()
+        locked_commit(con)
 
 def get_artists(user_id: str):
     with Connection() as con:
@@ -265,7 +280,7 @@ def get_unique_enabled_artist_no_id():
 def delete_artist(user_id: str, name: str):
     with Connection() as con:
         cur = con.execute("DELETE FROM ARTIST WHERE user_id=:user_id AND name=:name", {"user_id": user_id, "name": name})
-        con.commit()
+        locked_commit(con)
         cur.fetchall()
 
 def get_events(artist_id: str) -> list[dict]:
@@ -333,7 +348,7 @@ def insert_event(artist_id: str, event_id: str, event_details: dict, start: date
             VALUES (:artist_id, :event_id, :event_details, :start, :onsale, :presale, :venue, :country)
             """, {'artist_id': artist_id, 'event_id': event_id, 'event_details': event_details,
                 'start': start, 'onsale': onsale, 'presale': presale, 'venue': venue, 'country': country})
-            con.commit()
+            locked_commit(con)
         except Exception as e:
             con.rollback()
             con.close()
@@ -352,7 +367,7 @@ def update_event(artist_id: str, event_id: str, **kwargs: dict):
     WHERE artist_id=:artist_id AND event_id=:event_id 
                     """, {'artist_id': artist_id, 'event_id': event_id, **kwargs})
 
-        con.commit()
+        locked_commit(con)
 
 def get_artist_events(artist: str):
     with Connection() as con:
@@ -380,7 +395,7 @@ def delete_passed_events():
 )""", {'now': now})
         cur = con.execute(f"""DELETE FROM EVENT WHERE start<=:now""", {'now': now})
 
-        con.commit()
+        locked_commit(con)
 
 def get_user_country_specific_enabled_events(user_id: str):
     countries = get_user(user_id=user_id)['countries']
@@ -425,7 +440,7 @@ def set_event_notification(user_id: str, event_id: str, **kwargs):
                                 **kwargs
                                })
             
-            con.commit()
+            locked_commit(con)
             return
         except:
             con.rollback()
@@ -438,7 +453,7 @@ def set_event_notification(user_id: str, event_id: str, **kwargs):
                         **kwargs
                     })
         
-        con.commit()
+        locked_commit(con)
 
 def set_event_status(event_id: str, sale: bool, resale: bool):
     now = datetime.utcnow()
@@ -453,7 +468,7 @@ def set_event_status(event_id: str, sale: bool, resale: bool):
                                 "now": now
                                })
             
-            con.commit()
+            locked_commit(con)
             return
         except:
             con.rollback()
@@ -479,7 +494,7 @@ def set_event_status(event_id: str, sale: bool, resale: bool):
                         "now": now
                     })
         
-        con.commit()
+        locked_commit(con)
 
 def get_notif_enabled_events():
     with Connection() as con:
@@ -488,20 +503,40 @@ def get_notif_enabled_events():
 
 def get_notification_events():
     with Connection() as con:
-        cur = con.execute(f"""SELECT 
-                            es.*,
-                            uee.sale as sale_enabled,
-                            uee.resale as resale_enabled,
-                            u.telegramID,
-                            u.id as user_id,
-                            e.event_details
-                          FROM EVENT_STATUS es
-                          JOIN USER_EVENT_ENABLE uee ON uee.event_id=es.event_id AND (uee.sale=es.sale OR uee.resale=es.resale)
-                          JOIN USER u ON uee.user_id=u.id AND u.telegramID is not null
-                          JOIN EVENT e ON es.event_id=e.event_id
-                          WHERE es.sale or es.resale""")
+        event_statuses = [dict(**a) for a in con.execute("""
+                                                         SELECT es.*, e.event_details
+                                                         FROM EVENT_STATUS es
+                                                         JOIN EVENT e ON es.event_id=e.event_id
+                                                         WHERE es.sale or es.resale
+                                                        """).fetchall()]
+        event_enables = [dict(**a) for a in con.execute("""
+                                                        SELECT uee.sale, uee.resale, uee.event_id, u.id, u.telegramID
+                                                        FROM USER_EVENT_ENABLE uee
+                                                        JOIN USER u ON uee.user_id=u.id AND u.telegramID is not null
+                                                        WHERE uee.sale or uee.resale
+                                                        """).fetchall()]
 
-        return [dict(**a) for a in cur.fetchall()]
+        event_enables = {e["event_id"]: e for e in event_enables}
+
+        for event in event_statuses:
+            event.update(event_enables.get(event.pop("event_id"), {}))
+
+        return event_statuses
+
+        # cur = con.execute(f"""SELECT 
+        #                     es.*,
+        #                     uee.sale as sale_enabled,
+        #                     uee.resale as resale_enabled,
+        #                     u.telegramID,
+        #                     u.id as user_id,
+        #                     e.event_details
+        #                   FROM EVENT_STATUS es
+        #                   JOIN USER_EVENT_ENABLE uee ON uee.event_id=es.event_id AND (uee.sale=es.sale OR uee.resale=es.resale)
+        #                   JOIN USER u ON uee.user_id=u.id AND u.telegramID is not null
+        #                   JOIN EVENT e ON es.event_id=e.event_id
+        #                   WHERE es.sale or es.resale""")
+
+        # return [dict(**a) for a in cur.fetchall()]
 
 def has_been_notified(user_id: str, hash_string: str) -> bool:
     with Connection() as con:
@@ -511,7 +546,7 @@ def has_been_notified(user_id: str, hash_string: str) -> bool:
 
         if not has_notification:
             con.execute("INSERT INTO USER_NOTIFICATIONS(user_id, hash, date) values (:user_id, :hash, :date)", {'user_id': user_id, 'hash': hash_string, 'date': datetime.utcnow()})
-            con.commit()
+            locked_commit(con)
 
         return has_notification
 
@@ -521,7 +556,7 @@ if __name__ == '__main__':
     #     cur = con.execute("ALTER TABLE USER_EVENT_ENABLE ADD COLUMN sale bool")
     #     cur = con.execute("ALTER TABLE USER_EVENT_ENABLE ADD COLUMN resale bool")
         
-    #     con.commit()
+    #     locked_commit(con)
         
         # cur = con.execute("SELECT COUNT(*) FROM EVENT", {'start': datetime.utcnow()})
         # print(cur.fetchall()[0][:])
