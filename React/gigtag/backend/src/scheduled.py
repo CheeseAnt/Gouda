@@ -10,8 +10,8 @@ def do_regular_ticket_check():
         except:
             pass
 
-        # sleep for 15 minutes
-        time.sleep(60 * 15)
+        # sleep for 5 minutes
+        time.sleep(60 * 5)
 
 async def start():
     threading.Thread(target=ticketmaster._start, daemon=True).start()
