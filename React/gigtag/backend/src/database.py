@@ -13,7 +13,6 @@ def locked_commit(con, attempt: int=0):
             raise
         return locked_commit(con=con, attempt=attempt+1)
 
-
 class Connection:
     def __init__(self, path="data/gigtag.db"):
         self.path = path
@@ -28,6 +27,10 @@ class Connection:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connection.close()
         _lock.release()
+
+def do_query(q: str, *args, **kwargs):
+    with Connection() as con:
+        return con.execute(q, *args, **kwargs).fetchall()
 
 class Duplicate(Exception):
     pass
