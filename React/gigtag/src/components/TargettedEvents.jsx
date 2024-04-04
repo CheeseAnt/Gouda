@@ -110,7 +110,7 @@ const TargettedEvents = () => {
 
     return <div>
         {
-            loading ? <Loader /> :
+            loading ? <Loader title="Loading your events, this shouldn't take too long!"/> :
             <div className='container'>
                 <div className="d-flex">
                 </div>
@@ -119,6 +119,7 @@ const TargettedEvents = () => {
                     {events.slice(0, limit).map((event, idx) => {
                         return <Event key={idx} eventData={event} />
                     })}
+                    {events.length === 0 ? <h3>No events found, have you enabled any <a href="/artists">artists</a> or <a href="/playlists">playlists</a>?</h3> : null}
                     {loadingMore ? <Loader /> : null}
                 </div>
             </div>

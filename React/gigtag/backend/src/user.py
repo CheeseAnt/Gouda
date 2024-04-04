@@ -4,6 +4,7 @@ from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 import spotipy
+import threading
 
 @dataclass
 class Playlist():
@@ -46,6 +47,8 @@ class User():
     def __post_init__(self):
         if not database.get_user(user_id=self.id):
             database.insert_user(user_id=self.id, email=self.email)
+        
+        self._artist_thread = None
     
     def get_settings(self):
         return dict(**database.get_user(user_id=self.id))
@@ -149,9 +152,27 @@ class User():
     def _get_enabled_artists(self, fresh: bool=False):
         existing_artists = database.get_artists(user_id=self.id)
 
-        if not fresh and existing_artists and database.get_latest_artists_update(user_id=self.id) > (datetime.utcnow() - timedelta(minutes=5)):
-            return existing_artists
+        if fresh or len(existing_artists) == 0:
+            self.queue_artist_refresh(block=True)
 
+            existing_artists = database.get_artists(user_id=self.id)
+
+        elif database.get_latest_artists_update(user_id=self.id) < (datetime.utcnow() - timedelta(minutes=5)):
+            self.queue_artist_refresh()
+        
+        return existing_artists
+
+    def queue_artist_refresh(self, block: bool=False):
+        if self._artist_thread is None or (isinstance(self._artist_thread, threading.Thread) and (not self._artist_thread.is_alive())):
+            self._artist_thread =  threading.Thread(target=self._get_fresh_enabled_artists, daemon=True)
+            self._artist_thread.start()
+        
+        if block:
+            self._artist_thread.join()
+
+    def _get_fresh_enabled_artists(self):
+        print("Starting fresh artists")
+        existing_artists = database.get_artists(user_id=self.id)
         playlists = [p for p in self.get_playlists() if p.enabled]
 
         class ArtistCounter:
@@ -228,10 +249,9 @@ class User():
             database.delete_artist(user_id=self.id, name=artist)
 
         database.update_artist_time(user_id=self.id)
-
-        artists = database.get_artists(user_id=self.id)
-
-        return artists
+        
+        print("Finishing fresh artists")
+        
     
     def set_event_notification(self, event_id: str, **kwargs):
         database.set_event_notification(user_id=self.id, event_id=event_id, **kwargs)

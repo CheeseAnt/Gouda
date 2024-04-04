@@ -152,7 +152,7 @@ const SpotifyPlaylists = () => {
 
     return <div>
         {
-            loading ? <Loader /> :
+            loading ? <Loader title='Loading your playlists from spotify...' /> :
             <div className='container'>
                 <button className='btn gg-cream px-10 w-100 mt-3' onClick={refreshPlaylists}>Refresh from Spotify</button>
                 <h4 className="text-muted">Total Playlists: {Object.keys(playlists).length}</h4>
@@ -175,6 +175,7 @@ const SpotifyPlaylists = () => {
                         </div>
                     </div>
                 })}
+                {Object.keys(playlists).length === 0 ? <h3>No playlists found!</h3>: null}
             </div>
         }
     </div>

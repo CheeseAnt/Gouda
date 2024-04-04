@@ -91,7 +91,7 @@ const Artists = () => {
     return <div>
         <ArtistEvents artist={artist} show={show} setShow={setShow} />
         {
-            loading ? <Loader /> :
+            loading ? <Loader title='Loading your artists based on your playlist selections. This might take some time!'/> :
             <div className='container'>
                 <button className='btn gg-cream px-10 w-100 mt-3' onClick={refreshArtists}>Refresh from Spotify</button>
                 <div className="d-flex">
@@ -115,6 +115,7 @@ const Artists = () => {
                         </div>
                     </div>
                 })}
+                {sortedArtists.length === 0 ? <h3>No artists found. Have you enabled any <a href="/playlists">playlists</a>?</h3> : null}
             </div>
         }
     </div>
