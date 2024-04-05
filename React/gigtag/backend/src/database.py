@@ -312,7 +312,7 @@ def get_events(user_id: str, artist_id: str) -> list[dict]:
             FROM EVENT e
             JOIN ARTIST_ID ai ON e.artist_id = ai.id AND e.artist_id = :artist_id
             LEFT OUTER JOIN USER_EVENT_ENABLE uee ON uee.event_id = e.event_id AND uee.user_id=:user_id
-            GROUP BY e.event_id, ai.name
+            GROUP BY e.event_id
             ORDER BY e.start
             """, {'artist_id': artist_id, 'user_id': user_id})
             events = cur.fetchall()
@@ -421,7 +421,7 @@ def get_user_country_specific_enabled_events(user_id: str):
         JOIN ARTIST a ON a.name = ai.name
         LEFT OUTER JOIN USER_EVENT_ENABLE uee ON uee.event_id = e.event_id AND uee.user_id=?
         WHERE a.enabled AND {country_clause} AND a.user_id=?
-        GROUP BY e.event_id, ai.name
+        GROUP BY e.event_id
         ORDER BY e.start
         """, (user_id, *countries, user_id))
         
