@@ -1,0 +1,25 @@
+from node:latest as build
+
+WORKDIR gigtag-fe
+copy package* .
+
+RUN npm install
+
+copy src src
+COPY public public
+COPY .env.production .
+
+RUN npm run build
+
+from node:latest
+RUN apt update && apt install -y curl bsdmainutils
+RUN npm install -g serve
+workdir gigtag-fe
+COPY --from=build /gigtag-fe/build build
+COPY dehydrated dehydrated
+COPY domains.txt .
+COPY get_and_set_certs.sh .
+COPY config .
+COPY dehydrated_hook.sh .
+EXPOSE 8110
+cmd bash get_and_set_certs.sh && serve -s build -l 8110 --ssl-cert cert.cer --ssl-key key.pkey
