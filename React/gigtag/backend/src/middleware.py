@@ -35,7 +35,7 @@ def get_user(auth_token: str) -> user.User:
         return _cache[auth_token]
 
     except Exception as ex:
-        print("Failed to process user info", ex)
+        print("Failed to process user info", ex.with_traceback())
         raise InvalidToken()
 
 def activate(app: sanic.Sanic):

@@ -21,5 +21,3 @@ async def start():
     threading.Thread(target=do_regular_ticket_check, daemon=True).start()
     print("Started Telegram Inventory Thread")
     
-
-

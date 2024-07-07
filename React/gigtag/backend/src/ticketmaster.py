@@ -6,6 +6,7 @@ from . import settings, ticketpy_fix, database
 from datetime import datetime, timedelta
 from difflib import SequenceMatcher
 from functools import partial
+import concurrent
 
 def same_artist(artist_one: str, artist_two: str) -> bool:
     return SequenceMatcher(None, artist_one, artist_two).ratio() >= 0.75
@@ -28,41 +29,40 @@ def get_or_resolve_artist(api: ticketpy.ApiClient, artist: str) -> str:
     
     return artist_id
 
+def add_event(event):
+    attractions = [a.name for a in event.attractions]
+    attraction_ids = [a.id for a in event.attractions]
+    print(f"Adding event for artists {attractions}, event {event.name} at {event.utc_datetime}")
+
+    try:
+        database.upsert_event(
+            artist_ids=attraction_ids,
+            event_id=event.id,
+            event_details=event.json,
+            start=event.utc_datetime,
+            onsale=event.sales.public.start,
+            presale=",".join(p.start for p in event.sales.presales),
+            venue=f"{event.venues[0].city}: {event.venues[0].name}",
+            country=event.venues[0].json['country']['countryCode']
+        )
+    except Exception as ex:
+        print(f"Failed to add event for artist {attraction.name}, event {event.name}: {ex}")
+
 def get_attraction_events(api: ticketpy.ApiClient, attraction_ids: str):
     """Resolves all the events for a specific set of attractions
 
     Args:
         attraction_ids (str): Attraction ids in a comma separated string
     """
+    events = []
+    
     for page in api.events.find(attraction_id=attraction_ids, size=200):
         for event in page:
-            for attraction in event.attractions:
-                # print(f"Adding event for artist {attraction.name}, event {event.name} at {event.utc_datetime}")
-                
-                try:
-                    database.insert_event(
-                        artist_id=attraction.id,
-                        event_id=event.id,
-                        event_details=event.json,
-                        start=event.utc_datetime,
-                        onsale=event.sales.public.start,
-                        presale=",".join(p.start for p in event.sales.presales),
-                        venue=f"{event.venues[0].city}: {event.venues[0].name}",
-                        country=event.venues[0].json['country']['countryCode']
-                    )
-                except database.Duplicate:
-                    database.update_event(
-                        artist_id=attraction.id,
-                        event_id=event.id,
-                        event_details=event.json,
-                        start=event.utc_datetime,
-                        onsale=event.sales.public.start,
-                        presale=",".join(p.start for p in event.sales.presales),
-                        venue=f"{event.venues[0].city}: {event.venues[0].name}",
-                        country=event.venues[0].json['country']['countryCode']
-                    )
-                except Exception as ex:
-                    print(f"Failed to add event for artist {attraction.name}, event {event.name}: {ex}")
+            events.append(event)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:
+        print(f"Mapping {len(events)} events to be uploaded")
+        pool.map(add_event, events)
 
 def resolve_one_artist(api: ticketpy.ApiClient, artist: str) -> str:
     """
@@ -115,11 +115,12 @@ def get_artist_events(api: ticketpy.ApiClient, chunk: int=50):
 
 def update_artist_events_for_one_name(artist: str):
     api = ticketpy.ApiClient(api_key=settings.TICKETMASTER_API_KEY)
+    
     artist_id = get_or_resolve_artist(api=api, artist=artist)
     
     if not artist_id:
         return []
-
+    
     get_attraction_events(api=api, attraction_ids=artist_id)
 
 class EventTicketsAvailable():

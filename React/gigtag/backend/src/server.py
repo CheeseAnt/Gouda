@@ -46,7 +46,7 @@ async def get_artists(request: Request):
 
 @app.get("user/settings")
 async def user_settings(request: Request):
-    return response.JSONResponse(await asyncio.to_thread(request.ctx.user.get_settings))
+    return response.JSONResponse(await asyncio.to_thread(request.ctx.user.get_settings), default=str)
 
 @app.post("artist_events")
 async def artist_events(request: Request):
@@ -93,7 +93,7 @@ async def event_notification(request: Request):
 
 @app.get("user_events")
 async def user_events(request: Request):
-    return response.JSONResponse(await asyncio.to_thread(request.ctx.user.get_country_enabled_events))
+    return response.JSONResponse(await asyncio.to_thread(request.ctx.user.get_country_enabled_events), default=str)
 
 @app.get("telegram-login")
 async def telegram_login(request: Request):
