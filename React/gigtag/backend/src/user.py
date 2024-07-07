@@ -47,7 +47,6 @@ class User():
     _api: spotipy.client.Spotify
 
     def __post_init__(self):
-        self.id="0"
         if not database.get_user(user_id=self.id):
             database.insert_user(user_id=self.id, email=self.email)
         
