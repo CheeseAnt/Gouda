@@ -57,7 +57,7 @@ def send_bug_report(text: str):
 def send_message_to_user(user_id: str, text: str):
     settings = database.get_user(user_id=user_id)
 
-    user_id = get_user_id_from_jwt(token=settings['telegramID'])
+    user_id = get_user_id_from_jwt(token=settings.telegramID)
     if not user_id:
         print(f"User {user_id} {settings['email']} has invalid telegram JWT")
 

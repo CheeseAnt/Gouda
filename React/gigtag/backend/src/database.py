@@ -44,7 +44,7 @@ class Connection:
         self.conn_str = os.environ.get("az_conn")
 
     def __enter__(self):
-        self.connection: pyodbc.Connection = pyodbc.connect(f'{self.conn_str};DRIVER={{ODBC Driver 18 for SQL Server}}')
+        self.connection: pyodbc.Connection = pyodbc.connect(f'{self.conn_str}')
         self.connection.autocommit = False
 
         return self.connection
@@ -241,7 +241,10 @@ def get_playlists(user_id: str):
 
 def get_user(user_id: str):
     with Connection() as con:
-        return dictify(execute_with_dict(con, """SELECT * FROM "USER" WHERE id=:user_id""", {"user_id": user_id}).fetchall())[0]
+        try:
+            return dictify(execute_with_dict(con, """SELECT * FROM "USER" WHERE id=:user_id""", {"user_id": user_id}).fetchall())[0]
+        except Exception:
+            return
 
 def insert_artist(user_id: str, name: str, tracks: int, enabled: bool):
     with Connection() as con:
@@ -575,10 +578,10 @@ def set_event_status(event_id: str, sale: bool, resale: bool):
         
         row = execute_with_dict(con, "SELECT * FROM EVENT_STATUS WHERE event_id=:event_id", {"event_id": event_id}).fetchone()
         sets = []
-        if row['sale'] != sale:
+        if row.sale != sale:
             sets.append("sale=:sale,saledate=:now")
         
-        if row['resale'] != resale:
+        if row.resale != resale:
             sets.append("resale=:resale,resaledate=:now")
         
         if not sets:
@@ -608,7 +611,7 @@ def get_notification_events():
                                                          SELECT es.*, e.event_details
                                                          FROM EVENT_STATUS es
                                                          JOIN EVENT e ON es.event_id=e.event_id
-                                                         WHERE es.sale=1 or es.resale=1
+                                                         WHERE (es.sale=1 or es.resale=1)
                                                         """).fetchall())
         event_enables = dictify(execute_with_dict(con, """
                                                         SELECT uee.sale as sale_enabled, uee.resale as resale_enabled, uee.event_id, u.id as user_id, u.telegramID
@@ -619,10 +622,16 @@ def get_notification_events():
 
         event_enables = {e["event_id"]: e for e in event_enables}
 
+        events = []
         for event in event_statuses:
-            event.update(event_enables.get(event.get("event_id"), {}))
+            enabled = event_enables.get(event.get("event_id"), {})
+            
+            if not enabled:
+                continue
+            event.update(enabled)
+            events.append(event)
 
-        return event_statuses
+        return events
 
         # cur = execute_with_dict(con, f"""SELECT 
         #                     es.*,
