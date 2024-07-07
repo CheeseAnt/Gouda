@@ -1,7 +1,7 @@
 from node:latest as build
 
 WORKDIR gigtag-fe
-copy package* .
+copy package* ./
 
 RUN npm install
 

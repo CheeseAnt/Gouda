@@ -14,7 +14,7 @@ class Playlist():
     image_url: str
     tracks_url: str
     track_count: int
-    public: bool
+    public_: bool
     owner: str
     type: str
     last_updated: datetime
@@ -22,6 +22,7 @@ class Playlist():
     
     def as_dict(self):
         sd = asdict(self)
+        sd['last_updated'] = str(sd['last_updated'])
         return sd
 
 @dataclass
@@ -34,6 +35,7 @@ class Artist():
 
     def as_dict(self):
         sd = asdict(self)
+        sd['last_updated'] = str(sd['last_updated'])
         return sd
 
 @dataclass
@@ -79,6 +81,7 @@ class User():
         database.update_artist(user_id=self.id, name=name, kwargs={'enabled': value})
 
     def refresh_playlists(self):
+        # return # TODO: REMOVE
         response = self._api.current_user_playlists()
 
         if not response:
@@ -94,7 +97,7 @@ class User():
         
         try:
             playlists.append({
-                "id": 0,
+                "id": "0",
                 "images": [{"url":'https://misc.scdn.co/liked-songs/liked-songs-64.png'}],
                 "tracks": {"total": self._api.current_user_saved_tracks()['total'], "href": ""},
                 "name": 'Liked Songs',
@@ -257,7 +260,13 @@ class User():
         database.set_event_notification(user_id=self.id, event_id=event_id, **kwargs)
 
     def get_artist_events(self, artist: str) -> list[dict]:
-        return [dict(**row) for row in database.get_artist_events(user_id=self.id, artist=artist)]
+        events = [dict(**row) for row in database.get_artist_events(user_id=self.id, artist=artist)]
+        for event in events:
+            for key in list(event.keys()):
+                if isinstance(event[key], datetime):
+                    event[key] = str(event[key])
+        
+        return events
     
     def get_country_enabled_events(self) -> list[dict]:
         return database.get_user_country_specific_enabled_events(user_id=self.id)
