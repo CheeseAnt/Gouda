@@ -5,40 +5,19 @@ import { Loader } from './Loader';
 import { Form, InputGroup } from 'react-bootstrap';
 import ReactSelect from 'react-select';
 import { TelegramAuth } from './TelegramAuth';
+import { countries } from '../countries';
 
 const UserSettings = ({user, setShow, show}) => {
     const [loading, setLoading] = useState(false);
     const [done, setDone] = useState(false);
     const [settings, setSettings] = useState({});
-    const [countries, setCountries] = useState({"loading": "loading"});
 
     useEffect(() => {
         if(!show || loading || done) {
             return;
         }
-
-        const getCountries = async () => {
-            const res = await fetch("https://restcountries.com/v2/all");
-            if (!res.ok) {
-                return
-            }
-            const json = await res.json()
-
-            setCountries(previous => {
-                previous = {}
-                json.forEach((country) => {
-                    previous[country.alpha2Code] = country.name
-                });
-                return previous;
-            });
-        }
-
         const getSettings = async () => {
             setLoading(true);
-            if(Object.keys(countries).length === 1) {
-                await getCountries();
-            }
-
             const res = await getUserSettings();
 
             if(!res.ok) {
@@ -56,7 +35,7 @@ const UserSettings = ({user, setShow, show}) => {
             setLoading(false);
         };
         getSettings();
-    }, [setLoading, loading, done, show, setSettings, countries])
+    }, [setLoading, loading, done, show, setSettings])
 
     const close = () => {
         setShow(false);
