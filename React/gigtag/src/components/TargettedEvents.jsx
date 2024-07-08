@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { getUserCountryEnabledEvents } from "../api";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Loader } from "./Loader";
 import Event from "./Event";
+import { EventContext } from "./EventContext";
 
 const useNearBottom = () => {
     const [isNearBottom, setIsNearBottom] = useState(false);
@@ -40,56 +40,12 @@ const useNearBottom = () => {
     return {trigger};
 }
 
-const useEvents = () => {
-    const [events, setEvents] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [done, setDone] = useState(false);
-
-    // TODO: Make filter for artist, venue, date, price
-    // const artists = new Set(events.map(event => event.artists.split(",")).flat())
-
-    const getEvents = useCallback(async () => {
-        if(loading) {
-            return;
-        }
-        setLoading(true);
-        const res = await getUserCountryEnabledEvents();
-
-        if(!res.ok) {
-            setLoading(false);
-            setDone(true);
-            console.log("Failed to fetch user artists", res)
-            return;
-        }
-
-        const json = await res.json();
-        json.forEach((event) => {
-            event['event_details'] = JSON.parse(event['event_details']);
-            event['start_date'] = new Date(event['start']);
-        })
-        // json.sort((a, b) => a['start_date'] < b['start_date'] ? -1 : (a['start_date'] > b['start_date'] ? 1 : 0))
-
-        setEvents(json);
-        setLoading(false);
-        setDone(true);
-    }, [loading, setEvents, setLoading, setDone]);
-
-
-    useEffect(() => {
-        if(events.length || done) {
-            return;
-        }
-        getEvents()
-    }, [getEvents, events, done]);
-
-    return { events, loading, refreshEvents: getEvents };
-}
-
 const TargettedEvents = () => {
-    const { events, loading } = useEvents();
     const [ loadingMore, setLoadingMore ] = useState(true);
     const [ limit, setLimit ] = useState(50)
     const { trigger } = useNearBottom();
+
+    const { displayedEvents, loading } = useContext(EventContext);
 
     useEffect(() => {
         if(!trigger) {
@@ -97,33 +53,33 @@ const TargettedEvents = () => {
         }
 
         setLimit(previous => {
-            if (previous >= events.length) {
+            if (previous >= displayedEvents.length) {
                 setLoadingMore(false);
 
                 return previous
             };
 
             setLoadingMore(true);
-            return Math.min(previous + 10, events.length)
+            return Math.min(previous + 10, displayedEvents.length)
         });
-    }, [trigger, events.length])
+    }, [trigger, displayedEvents.length])
 
     return <div>
-        {
+            {
             loading ? <Loader title="Loading your events, this shouldn't take too long!"/> :
             <div className='container'>
                 <div className="d-flex">
                 </div>
-                <h4 className="text-muted" style={{left: "10%", position: "absolute"}}>Total Events: {events.length}</h4>
+                <h4 className="text-muted" style={{left: "10%", position: "absolute"}}>Total Events: {displayedEvents.length}</h4>
                 <div className="container">
-                    {events.slice(0, limit).map((event, idx) => {
+                    {displayedEvents.slice(0, limit).map((event, idx) => {
                         return <Event key={idx} eventData={event} />
                     })}
-                    {events.length === 0 ? <h3>No events found, have you enabled any <a href="/artists">artists</a> or <a href="/playlists">playlists</a>?</h3> : null}
+                    {displayedEvents.length === 0 ? <h3>No events found, have you enabled any <a href="/artists">artists</a> or <a href="/playlists">playlists</a>?</h3> : null}
                     {loadingMore ? <Loader /> : null}
                 </div>
             </div>
-        }
+            }
     </div>
 }
 

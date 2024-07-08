@@ -5,4 +5,4 @@ ticketpy
 uvicorn
 python-dotenv
 PyJWT
-pymongo
+pyodbc

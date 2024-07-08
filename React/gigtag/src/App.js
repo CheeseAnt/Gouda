@@ -13,11 +13,13 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
+import { EventProvider } from './components/EventProvider'
+import EventFilter from './components/EventFilter'
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <TargettedEvents />
+    element: <div><EventFilter /><TargettedEvents /></div>
   },
   {
     path: "/artists",
@@ -54,7 +56,9 @@ const App = () => {
       {!invalidToken && token ? (
         <div>
           <SpotifyUserInfo setInvalid={resetInvalid}>
-            <RouterProvider router={router} />
+            <EventProvider>
+              <RouterProvider router={router} />
+            </EventProvider>
           </SpotifyUserInfo>
         </div>
       ) : (
