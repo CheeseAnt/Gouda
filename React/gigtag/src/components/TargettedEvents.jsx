@@ -68,9 +68,6 @@ const TargettedEvents = () => {
             {
             loading ? <Loader title="Loading your events, this shouldn't take too long!"/> :
             <div className='container'>
-                <div className="d-flex">
-                </div>
-                <h4 className="text-muted" style={{left: "10%", position: "absolute"}}>Total Events: {displayedEvents.length}</h4>
                 <div className="container">
                     {displayedEvents.slice(0, limit).map((event, idx) => {
                         return <Event key={idx} eventData={event} />

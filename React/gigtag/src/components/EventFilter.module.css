@@ -1,13 +1,10 @@
 .sideBar {
     position: absolute!important;
     left: 0;
-    margin: 1rem;
-}
-
-.sideBar {
-    position: absolute!important;
-    left: 0;
-    margin: 1rem;
+    padding: 1rem;
+    background-color: antiquewhite;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
 }
 
 .burgerMenu {
@@ -31,14 +28,17 @@
 
 .filterSection {
     overflow-y: auto;
-    max-height: 20vh;
-    min-width: 10vw;
-    max-width: 15vw;
-}
+    max-height: 200px;
+}    
 
 .filterSectionContainer {
-    margin: 1rem;
+    padding: 0.5rem;
+    padding-top: 1rem;
+    padding-bottom: 0;
     overflow-y: hidden;
+    border: 2px #FECEA8 solid;
+    margin: 0.5rem;
+    border-radius: 5px;
 }
 
 .filterItem {
@@ -66,11 +66,26 @@
 
 .applyButton {
     margin: 1rem;
-    width: 10vw;
+    width: 200px;
 }
 
 .dateFilter {
-    margin: 1rem;
-    min-width: 10vw;
-    max-width: 15vw;
+    width: 85%!important;
+}
+
+.dateSliderContainer {
+    text-align: center;
+    padding: 2rem;
+    padding-bottom: 0;
+    overflow-x: hidden;
+}
+
+.applyButtonContainer {
+    text-align: center;
+}
+
+.filterSearch {
+    margin-left: 1rem;
+    margin-right: 1rem;
+    font-size: small;
 }

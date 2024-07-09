@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useCallback, useState, use
 import { slide as Menu } from 'react-burger-menu';
 import styles from './EventFilter.module.css'
 import { FilterListOutlined } from '@mui/icons-material';
-import { Button, Checkbox, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ListSubheader, Slider } from '@mui/material';
+import { Button, Checkbox, Input, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ListSubheader, Slider } from '@mui/material';
 import { EventContext } from './EventContext';
 
 const FilterContext = createContext({});
@@ -57,7 +57,8 @@ const FilterProvider = ({children, data, onFilterChange}) => {
 }
 
 const CheckFilter = ({filters, title, dataKey, condition}) => {
-  const [checked, setChecked] = useState({})
+  const [checked, setChecked] = useState({});
+  const [checksToDisplay, setChecksToDisplay] = useState([]);
   const filteredValues = useMemo(() => Object.keys(checked).filter(key => checked[key]), [checked]);
 
   const filter = useCallback((dataPoint) => {
@@ -76,16 +77,31 @@ const CheckFilter = ({filters, title, dataKey, condition}) => {
   useEffect(() => {
     const c = filters.reduce((acc, filter) => {acc[filter] = false; return acc;}, {});
     setChecked(c);
+    setChecksToDisplay(filters);
   }, [filters])
 
   const onChange = (key) => {
     setChecked((prev) => {prev[key] = !prev[key]; return {...prev}});
   }
 
+  const onSearch = (event) => {
+    const term = event.target.value?.toLowerCase();
+
+    if(!term) {
+      setChecksToDisplay(Object.keys(checked));
+    }
+    else {
+      setChecksToDisplay(Object.keys(checked).filter(checkKey => checkKey.toLowerCase().includes(term)));
+    }
+  }
+
   return <div className={styles.filterSectionContainer}>
-    <ListSubheader className={styles.subtitle}>{title}</ListSubheader>
+    <div className='d-flex align-items-center'>
+      <ListSubheader className={styles.subtitle}>{title}</ListSubheader>
+      <Input className={styles.filterSearch} placeholder={`Search for ${title}...`} onChange={onSearch}/>
+    </div>
     <List className={styles.filterSection}>
-      {Object.keys(checked).map((key, idx) => {
+      {checksToDisplay.map((key, idx) => {
         return <ListItem key={idx} className={styles.filterItem}>
         <ListItemButton className={styles.filterButton} onClick={() => onChange(key)} dense>
           <ListItemIcon className={styles.filterIcon}>
@@ -132,16 +148,18 @@ const DateFilter = ({min, max, title, dataKey, condition}) => {
 
   return <div className={styles.filterSectionContainer}>
     <ListSubheader className={styles.subtitle}>{title}</ListSubheader>
-    <Slider
-      className={styles.dateFilter}
-      getAriaLabel={() => title}
-      value={dateRange}
-      min={min}
-      max={max}
-      onChange={onChange}
-      valueLabelDisplay="auto"
-      valueLabelFormat={valueLabelFormat}
-    />
+    <div className={styles.dateSliderContainer}>
+      <Slider
+        className={styles.dateFilter}
+        getAriaLabel={() => title}
+        value={dateRange}
+        min={min}
+        max={max}
+        onChange={onChange}
+        valueLabelDisplay="auto"
+        valueLabelFormat={valueLabelFormat}
+      />
+    </div>
   </div>
 }
 
@@ -154,7 +172,7 @@ const EventFilter = () => {
   //   price: '',
   // });
 
-  const { loading, events, setDisplayedEvents } = useContext(EventContext);
+  const { loading, events, setDisplayedEvents, displayedEvents } = useContext(EventContext);
 
   const artists = useMemo(() => {
     let artists = [];
@@ -179,20 +197,7 @@ const EventFilter = () => {
     return [minDate, maxDate];
   }, [events]);
 
-
-  // const filteredEvents = events.filter((event) => {
-  //   const { artistName, venue, country, date, price } = event; // Assuming artist object structure
-
-  //   return (
-  //     artistName.toLowerCase().includes(filters.artists.toLowerCase()) &&
-  //     venue.toLowerCase().includes(filters.venue.toLowerCase()) &&
-  //     country.toLowerCase().includes(filters.country.toLowerCase()) &&
-  //     (!filters.date || new Date(date) >= new Date(filters.date)) && // Date filter (optional)
-  //     (!filters.price || price <= parseFloat(filters.price)) // Price filter (optional)
-  //   );
-  // });
-
-  if(loading) return null;
+  if(loading || events.length===0) return null;
 
   return <div>
     <FilterProvider data={events} onFilterChange={setDisplayedEvents}>
@@ -203,6 +208,7 @@ const EventFilter = () => {
       menuClassName={styles.burgerMenu}
       customBurgerIcon={<FilterListOutlined />}
       >
+        <h4 className="text-muted">Events: {displayedEvents.length}</h4>
         <CheckFilter filters={artists} title='Artist' dataKey='artists' condition={
           (artists, filtered) => (new Set(filtered)).intersection(new Set(artists.split(","))).size
         }/>
@@ -212,9 +218,11 @@ const EventFilter = () => {
         <DateFilter min={minDate} max={maxDate} title='Date' dataKey='start_date' condition={
           (start, minmax) => (minmax[0] <= start.getTime() && start.getTime() <= minmax[1])
         }/>
-        <FilterContext.Consumer>
-          {ctx => <Button onClick={ctx.applyFilters} className={`gg-black ${styles.applyButton}`}>Apply</Button>}
-        </FilterContext.Consumer>
+        <div className={styles.applyButtonContainer}>
+          <FilterContext.Consumer>
+            {ctx => <Button onClick={ctx.applyFilters} className={`gg-black ${styles.applyButton}`}>Apply</Button>}
+          </FilterContext.Consumer>
+        </div>
       </Menu>
     </FilterProvider>
   </div>
