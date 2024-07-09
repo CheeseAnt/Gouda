@@ -1,0 +1,76 @@
+.sideBar {
+    position: absolute!important;
+    left: 0;
+    margin: 1rem;
+}
+
+.sideBar {
+    position: absolute!important;
+    left: 0;
+    margin: 1rem;
+}
+
+.burgerMenu {
+    overflow-y: hidden!important;
+}
+
+.burgerBar {
+    position: absolute;
+    top:0;
+    left:0;
+}
+
+.burgerButton {
+    position: absolute;
+    top: 0;
+    left:0;
+    width: 2rem;
+    margin: 1rem;
+    color: white;
+}
+
+.filterSection {
+    overflow-y: auto;
+    max-height: 20vh;
+    min-width: 10vw;
+    max-width: 15vw;
+}
+
+.filterSectionContainer {
+    margin: 1rem;
+    overflow-y: hidden;
+}
+
+.filterItem {
+    margin: 0!important;
+    padding: 0!important;
+    font-size: small;
+}
+
+.filterButton  {
+    margin: 0!important;
+    padding: 1px!important;
+}
+
+.filterIcon {
+    min-width: 1.5rem!important;
+    height: 1rem!important;
+}
+
+.subtitle {
+    background-color: #ffffff00!important;
+    padding: 0;
+    margin: 0;
+    line-height: normal!important;
+}
+
+.applyButton {
+    margin: 1rem;
+    width: 10vw;
+}
+
+.dateFilter {
+    margin: 1rem;
+    min-width: 10vw;
+    max-width: 15vw;
+}
